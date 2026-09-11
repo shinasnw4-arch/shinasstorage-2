@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة مخزون محل المكملات الغذائية الذكي</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
+
+    <div id="lowStockBanner" class="hidden bg-amber-500 text-slate-900 px-4 py-2 text-xs font-bold shadow-inner flex items-center justify-between">
+        <div class="flex items-center gap-2 max-w-7xl mx-auto w-full">
+            <i class="fa-solid fa-triangle-exclamation text-base animate-bounce"></i>
+            <span id="bannerText">تنبيه: يوجد منتجات وصلت لنسبة نفاد قريبة أوشكت على الانتهاء!</span>
+        </div>
+        <button onclick="document.getElementById('lowStockBanner').classList.add('hidden')" class="text-slate-900 hover:text-white transition">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <header class="bg-slate-900 text-white shadow-xl sticky top-0 z-30 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-emerald-600 to-teal-400 p-3 rounded-2xl text-slate-900 font-extrabold text-2xl shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-dumbbell"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl font-extrabold tracking-tight">إدارة مخزون المكملات</h1>
+                        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">مباشر v2.5</span>
+                    </div>
+                    <p class="text-xs text-slate-400">تتبع صلاحيات FIFO - النواقص - تحليل الذكاء الاصطناعي</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-2">
+                <button onclick="openAiAssistantModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-lg transition flex items-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-wand-magic-sparkles text-indigo-200"></i> مساعد AI
+                </button>
+                <button onclick="openOrderModal()" class="bg-amber-600 hover:bg-amber-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-lg transition flex items-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-truck-ramp-box"></i> طلبية مَورد
+                </button>
+                <button onclick="openSalesModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-lg transition flex items-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-cash-register"></i> تسجيل مبيعات
+                </button>
+                <button onclick="openCategoryModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-semibold transition border border-slate-700 flex items-center gap-2">
+                    <i class="fa-solid fa-tags text-emerald-400"></i> التصنيفات
+                </button>
+                <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-semibold transition border border-slate-700 flex items-center gap-2" title="تصدير CSV">
+                    <i class="fa-solid fa-download text-emerald-400"></i> تصدير
+                </button>
+                <button onclick="openAddModal()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-4 py-2 rounded-xl text-xs font-black shadow-lg shadow-emerald-500/20 transition flex items-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-plus"></i> منتج جديد
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+        
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            <!-- Total Items -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between hover:shadow-md transition">
+                <div>
+                    <p class="text-xs font-bold text-slate-400">إجمالي الأصناف</p>
+                    <h3 id="stat-total" class="text-2xl font-black text-slate-800 mt-1">0</h3>
+                </div>
+                <div class="w-11 h-11 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+            </div>
+            <!-- Low Stock -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between hover:shadow-md transition">
+                <div>
+                    <p class="text-xs font-bold text-slate-400">تنبيه النواقص</p>
+                    <h3 id="stat-low" class="text-2xl font-black text-amber-600 mt-1">0</h3>
+                </div>
+                <div class="w-11 h-11 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+            </div>
+            <!-- Out of Stock -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between hover:shadow-md transition">
+                <div>
+                    <p class="text-xs font-bold text-slate-400">نفذ تماماً (0)</p>
+                    <h3 id="stat-out" class="text-2xl font-black text-rose-600 mt-1">0</h3>
+                </div>
+                <div class="w-11 h-11 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </div>
+            </div>
+            <!-- Near Expiry -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between hover:shadow-md transition">
+                <div>
+                    <p class="text-xs font-bold text-slate-400">قريب الصلاحية (&lt;90 يوم)</p>
+                    <h3 id="stat-expiry" class="text-2xl font-black text-orange-600 mt-1">0</h3>
+                </div>
+                <div class="w-11 h-11 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+            </div>
+            <!-- Expired -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between col-span-2 sm:col-span-1 hover:shadow-md transition">
+                <div>
+                    <p class="text-xs font-bold text-slate-400">منتهي الصلاحية</p>
+                    <h3 id="stat-expired" class="text-2xl font-black text-red-600 mt-1">0</h3>
+                </div>
+                <div class="w-11 h-11 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-ban"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="relative w-full md:w-96">
+                <span class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" id="searchInput" oninput="filterProducts()" placeholder="ابحث بالاسم، الماركة، النكهة أو الحجم..." class="w-full pr-10 pl-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-emerald-500 focus:bg-white transition">
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
+                <select id="categoryFilter" onchange="filterProducts()" class="bg-slate-50 border border-slate-200 px-3 py-2.5 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-emerald-500 font-medium">
+                    <option value="">جميع التصنيفات</option>
+                </select>
+                <select id="statusFilter" onchange="filterProducts()" class="bg-slate-50 border border-slate-200 px-3 py-2.5 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-emerald-500 font-medium">
+                    <option value="">جميع الحالات</option>
+                    <option value="low">تنبيه النواقص (أقل من الحد الأدنى)</option>
+                    <option value="out">نفذ تماماً (مخزون 0)</option>
+                    <option value="near">قريب الصلاحية (أقل من 90 يوم)</option>
+                    <option value="expired">منتهي الصلاحية</option>
+                    <option value="ok">سليم وطبيعي</option>
+                </select>
+                <button onclick="openImportModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="استيراد من CSV">
+                    <i class="fa-solid fa-file-excel text-emerald-600"></i> استيراد
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-right border-collapse min-w-[768px]">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 text-xs font-extrabold border-b border-slate-200">
+                            <th class="p-4">الماركة</th>
+                            <th class="p-4">اسم المنتج</th>
+                            <th class="p-4">التصنيف</th>
+                            <th class="p-4">النكهة / الحجم</th>
+                            <th class="p-4">تاريخ الصلاحية</th>
+                            <th class="p-4 text-center">المخزون الحالي</th>
+                            <th class="p-4 text-center">حد إعادة الطلب</th>
+                            <th class="p-4 text-center">حالة الصلاحية</th>
+                            <th class="p-4 text-center">خيارات وإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody" class="divide-y divide-slate-100 text-xs sm:text-sm">
+                        <!-- Dynamic rows injected via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty state element -->
+            <div id="emptyState" class="hidden py-16 text-center">
+                <div class="text-slate-300 text-5xl mb-3"><i class="fa-solid fa-box-open"></i></div>
+                <p class="text-slate-500 font-bold">لا توجد منتجات مطابقة لنتائج البحث أو الفلترة الحالية.</p>
+                <button onclick="resetFilters()" class="mt-3 text-xs bg-emerald-50 text-emerald-700 font-bold px-4 py-2 rounded-xl hover:bg-emerald-100 transition">إعادة ضبط الفلاتر</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="aiAssistantModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-100 flex flex-col h-[85vh]">
+            <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-indigo-600/30 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
+                        <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-base">مساعد الذكاء الاصطناعي (Gemini AI)</h3>
+                        <p class="text-[11px] text-indigo-200">تحليل النواقص، صياغة طلبات الموردين والعروض</p>
+                    </div>
+                </div>
+                <button onclick="closeAiAssistantModal()" class="text-slate-400 hover:text-white transition text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="p-3 bg-indigo-50/60 border-b border-indigo-100 flex flex-wrap gap-2 items-center">
+                <span class="text-[11px] font-black text-indigo-900">أسئلة سريعة:</span>
+                <button onclick="askAiPrompt('حلل المخزون واعطني أولوية الشراء حسب النواقص')" class="bg-white hover:bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-indigo-200 transition">📊 أولويات الشراء</button>
+                <button onclick="askAiPrompt('اقترح عروض ترويجية لتصريف المنتجات القريبة من الانتهاء')" class="bg-white hover:bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-indigo-200 transition">🔥 عروض الصلاحية القريبة</button>
+                <button onclick="askAiPrompt('صغ لي رسالة واتساب رسمية للمورد بطلب البضاعة الناقصة')" class="bg-white hover:bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-indigo-200 transition">📱 طلبية واتساب للمورد</button>
+            </div>
+
+            <div id="aiChatContainer" class="flex-grow p-4 overflow-y-auto space-y-4 text-xs sm:text-sm bg-slate-50 custom-scrollbar">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 font-bold text-xs"><i class="fa-solid fa-robot"></i></div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 max-w-[85%] text-slate-700 leading-relaxed">
+                        أهلاً بك! أنا مساعدك الذكي لإدارة محل المكملات. يمكنني تحليل مخزونك في الوقت الفعلي، توجيه طلباتك للموردين، واقتراح أفكار تسويقية للحفاظ على حركة المبيعات وتجنب راكد الصلاحيات.
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 bg-white border-t border-slate-200 flex gap-2">
+                <input type="text" id="aiQueryInput" onkeypress="if(event.key === 'Enter') sendAiQuery()" placeholder="اكتب استفسارك للذكاء الاصطناعي هنا..." class="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-indigo-500">
+                <button onclick="sendAiQuery()" id="aiSendBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm transition shadow flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> إرسال
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="aiImageModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100 p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-image text-indigo-600"></i> مولد صور التسويق بالذكاء الاصطناعي
+                </h3>
+                <button onclick="closeAiImageModal()" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <p id="aiImageProductName" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-2 rounded-xl border border-indigo-100"></p>
+            
+            <div id="aiImagePreviewContainer" class="bg-slate-50 rounded-2xl min-h-[260px] flex items-center justify-center border-2 border-dashed border-slate-200 relative overflow-hidden">
+                <div id="aiImagePlaceholder" class="text-center p-6 text-slate-400">
+                    <i class="fa-solid fa-wand-magic-sparkles text-4xl mb-2 text-indigo-500 animate-pulse"></i>
+                    <p class="text-xs font-bold text-slate-600">اضغط على الزر أدناه لتوليد صورة ثلاثية الأبعاد احترافية للمنتج</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeAiImageModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition">إغلاق</button>
+                <button onclick="generateProductImage()" id="aiImageGenerateBtn" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black rounded-xl shadow-lg transition flex items-center gap-2">
+                    <i class="fa-solid fa-sparkles"></i> توليد الصورة الآن
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="productModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-100 transform transition-all">
+            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
+                <h3 id="modalTitle" class="font-extrabold text-base">إضافة منتج جديد للمخزون</h3>
+                <button onclick="closeProductModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="productForm" onsubmit="saveProduct(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                <input type="hidden" id="editProductId">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">الماركة / الشركة المصنعة *</label>
+                        <input type="text" id="productBrand" required placeholder="مثال: Optimum Nutrition" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">اسم المنتج *</label>
+                        <input type="text" id="productName" required placeholder="مثال: Gold Standard 100% Whey" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">التصنيف *</label>
+                        <select id="productCategory" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 font-medium">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">النكهة والحجم *</label>
+                        <input type="text" id="productFlavorSize" required placeholder="مثال: شوكولاتة - 5 lbs" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">تاريخ الصلاحية *</label>
+                        <input type="date" id="productExpiry" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">الكمية الحالية *</label>
+                        <input type="number" id="productQty" min="0" required placeholder="10" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">حد إعادة الطلب (Min) *</label>
+                        <input type="number" id="productMinQty" min="0" required placeholder="3" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3 border-t border-slate-100">
+                    <button type="button" onclick="closeProductModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition">إلغاء</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-900 text-xs font-black rounded-xl shadow-lg transition">حفظ البيانات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="categoryModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100">
+            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="font-extrabold text-base">إدارة تصنيفات المنتجات</h3>
+                <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex gap-2">
+                    <input type="text" id="newCategoryName" placeholder="اسم التصنيف الجديد..." class="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+                    <button onclick="addCategory()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow">إضافة</button>
+                </div>
+                <div class="border border-slate-200/80 rounded-2xl overflow-hidden max-h-60 overflow-y-auto custom-scrollbar">
+                    <ul id="categoryListContainer" class="divide-y divide-slate-100 text-xs sm:text-sm">
+                        <!-- Category items dynamically populated -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="orderModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="bg-amber-800 text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="font-extrabold text-base flex items-center gap-2"><i class="fa-solid fa-truck-ramp-box"></i> استلام طلبية جديدة من مَورد</h3>
+                <button onclick="closeOrderModal()" class="text-slate-300 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-grow">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">اسم المورد / الشركة *</label>
+                        <input type="text" id="orderSupplierName" placeholder="مثال: المورد الذهبي للمكملات" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-700 mb-1">ملاحظات الشحنة</label>
+                        <input type="text" id="orderNotes" placeholder="مثال: شحنة مستوردة - فواتير مارس" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm focus:outline-none focus:border-amber-500">
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-100 pt-4">
+                    <h4 class="text-xs font-extrabold text-slate-800 mb-2">أصناف الشحنة المستلمة:</h4>
+                    <div id="orderItemsContainer" class="space-y-2.5">
+                        <!-- Dynamic item rows -->
+                    </div>
+                    <button type="button" onclick="addOrderItemRow()" class="mt-3 text-xs bg-amber-50 hover:bg-amber-100 text-amber-800 font-extrabold px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> إضافة صنف آخر
+                    </button>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+                <button type="button" onclick="closeOrderModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition">إلغاء</button>
+                <button type="button" onclick="submitPurchaseOrder()" class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-black rounded-xl shadow transition">إيداع الكميات في المخزون</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="salesModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="font-extrabold text-base flex items-center gap-2"><i class="fa-solid fa-cash-register"></i> تسجيل مبيعات اليوم (خصم تلقائي)</h3>
+                <button onclick="closeSalesModal()" class="text-slate-300 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-grow">
+                <p class="text-xs text-slate-500 font-semibold">حدد الأصناف والكميات المباعة ليتم خصمها تلقائياً من مخزون المحل الحالي:</p>
+                <div id="salesItemsContainer" class="space-y-2.5">
+                    <!-- Dynamic sales rows -->
+                </div>
+                <button type="button" onclick="addSalesItemRow()" class="mt-3 text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 font-extrabold px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i> إضافة منتج مباع آخر
+                </button>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+                <button type="button" onclick="closeSalesModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition">إلغاء</button>
+                <button type="button" onclick="submitDailySales()" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black rounded-xl shadow transition">تأكيد المبيعات والخصم</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="importModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100">
+            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="font-extrabold text-base">استيراد المنتجات من (CSV / Excel)</h3>
+                <button onclick="closeImportModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="bg-slate-50 p-5 rounded-2xl border-2 border-dashed border-slate-300 text-center">
+                    <i class="fa-solid fa-file-arrow-up text-4xl text-emerald-500 mb-2"></i>
+                    <p class="text-xs sm:text-sm font-bold text-slate-700">اختر ملف CSV بالصيغة القياسية التالية:</p>
+                    <p class="text-[11px] text-slate-400 font-mono mt-1" dir="ltr">Brand, Name, Category, FlavorSize, ExpiryDate, Qty, MinQty</p>
+                    <input type="file" id="csvFileInput" accept=".csv" class="mt-4 block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                </div>
+                <div class="flex justify-between items-center pt-2">
+                    <button onclick="downloadTemplate()" class="text-xs text-emerald-600 font-bold hover:underline flex items-center gap-1">
+                        <i class="fa-solid fa-download"></i> تحميل ملف تجريبي
+                    </button>
+                    <button onclick="processCSVImport()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow">رفع ومعالجة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center border border-slate-100 space-y-4">
+            <div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-2xl mx-auto">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h4 id="confirmTitle" class="font-extrabold text-base text-slate-800">تأكيد الحذف</h4>
+            <p id="confirmBody" class="text-xs text-slate-600 font-medium"></p>
+            <div class="flex gap-2 justify-center pt-2">
+                <button onclick="closeConfirmModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">إلغاء</button>
+                <button id="confirmBtn" class="w-1/2 bg-rose-600 hover:bg-rose-500 text-white font-black py-2.5 rounded-xl text-xs transition shadow">حذف الآن</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="messageModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center border border-slate-100">
+            <div id="msgIcon" class="w-12 h-12 rounded-full mx-auto flex items-center justify-center text-xl mb-3"></div>
+            <h4 id="msgTitle" class="font-bold text-base text-slate-800 mb-1">تنبيه النظام</h4>
+            <p id="msgBody" class="text-xs text-slate-600 mb-5 leading-relaxed"></p>
+            <button onclick="closeMessageModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition">موافق</button>
+        </div>
+    </div>
+
+    <script>
+        const defaultCategories = [
+            'بروتين (Protein)', 
+            'كرياتين (Creatine)', 
+            'فيتامينات ومعادن', 
+            'حوارق دهون (Fat Burners)', 
+            'طاقة وأداء (Pre-Workout)', 
+            'أحماض أمينية (BCAA / EAA)'
+        ];
+
+        const defaultProducts = [
+            {
+                id: '1',
+                brand: 'Optimum Nutrition',
+                name: 'Gold Standard 100% Whey',
+                category: 'بروتين (Protein)',
+                flavorSize: 'شوكولاتة - 5 lbs',
+                expiry: '2026-11-15',
+                qty: 8,
+                minQty: 3
+            },
+            {
+                id: '2',
+                brand: 'BSN',
+                name: 'Syntha-6 Edge',
+                category: 'بروتين (Protein)',
+                flavorSize: 'فانيليا - 2 lbs',
+                expiry: '2026-06-10',
+                qty: 2,
+                minQty: 4
+            },
+            {
+                id: '3',
+                brand: 'MuscleTech',
+                name: 'Platinum Creatine 100%',
+                category: 'كرياتين (Creatine)',
+                flavorSize: 'بدون نكهة - 300g',
+                expiry: '2027-05-20',
+                qty: 0,
+                minQty: 5
+            },
+            {
+                id: '4',
+                brand: 'NOW Foods',
+                name: 'Adam Men’s Multi',
+                category: 'فيتامينات ومعادن',
+                flavorSize: 'كبسولات - 120 Tab',
+                expiry: '2026-04-01',
+                qty: 4,
+                minQty: 2
+            },
+            {
+                id: '5',
+                brand: 'Cellucor',
+                name: 'C4 Original Pre-Workout',
+                category: 'طاقة وأداء (Pre-Workout)',
+                flavorSize: 'توت أزرق - 30 حصة',
+                expiry: '2025-10-15',
+                qty: 6,
+                minQty: 3
+            }
+        ];
+
+        let categories = JSON.parse(localStorage.getItem('nutrition_categories')) || defaultCategories;
+        let products = JSON.parse(localStorage.getItem('nutrition_products')) || defaultProducts;
+        let activeImageProductId = null;
+        let pendingDeleteId = null;
+
+        function saveToLocalStorage() {
+            localStorage.setItem('nutrition_categories', JSON.stringify(categories));
+            localStorage.setItem('nutrition_products', JSON.stringify(products));
+        }
+
+        function populateCategoryDropdowns() {
+            const catFilter = document.getElementById('categoryFilter');
+            const prodCatSelect = document.getElementById('productCategory');
+            const catListContainer = document.getElementById('categoryListContainer');
+
+            if (catFilter) {
+                const currentVal = catFilter.value;
+                catFilter.innerHTML = '<option value="">جميع التصنيفات</option>';
+                categories.forEach(c => {
+                    catFilter.innerHTML += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+                });
+                catFilter.value = currentVal;
+            }
+
+            if (prodCatSelect) {
+                const currentVal = prodCatSelect.value;
+                prodCatSelect.innerHTML = '';
+                categories.forEach(c => {
+                    prodCatSelect.innerHTML += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+                });
+                if (currentVal && categories.includes(currentVal)) {
+                    prodCatSelect.value = currentVal;
+                }
+            }
+
+            if (catListContainer) {
+                catListContainer.innerHTML = '';
+                categories.forEach((c) => {
+                    const li = document.createElement('li');
+                    li.className = 'p-3 flex justify-between items-center hover:bg-slate-50 transition';
+                    li.innerHTML = `
+                        <span class="font-bold text-slate-700 text-xs sm:text-sm">${escapeHtml(c)}</span>
+                        <button onclick="deleteCategory('${escapeHtml(c)}')" class="text-rose-500 hover:text-rose-700 transition p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+                    `;
+                    catListContainer.appendChild(li);
+                });
+            }
+        }
+
+        function addCategory() {
+            const input = document.getElementById('newCategoryName');
+            const val = input.value.trim();
+            if (!val) {
+                showMessage('تنبيه', 'الرجاء إدخال اسم التصنيف.', 'error');
+                return;
+            }
+            if (categories.includes(val)) {
+                showMessage('تنبيه', 'هذا التصنيف موجود مسبقاً.', 'error');
+                return;
+            }
+            categories.push(val);
+            saveToLocalStorage();
+            populateCategoryDropdowns();
+            input.value = '';
+            showMessage('تمت الإضافة', 'تم إضافة التصنيف الجديد بنجاح.');
+        }
+
+        function deleteCategory(catName) {
+            categories = categories.filter(c => c !== catName);
+            saveToLocalStorage();
+            populateCategoryDropdowns();
+            showMessage('تم الحذف', `تم حذف التصنيف "${catName}".`);
+        }
+
+        function openCategoryModal() {
+            populateCategoryDropdowns();
+            document.getElementById('categoryModal').classList.remove('hidden');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').classList.add('hidden');
+        }
+
+        function updateDashboard() {
+            const today = new Date();
+            let total = products.length;
+            let low = 0;
+            let out = 0;
+            let near = 0;
+            let expired = 0;
+
+            products.forEach(p => {
+                const expiryDate = new Date(p.expiry);
+                const diffTime = expiryDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (p.qty === 0) {
+                    out++;
+                } else {
+                    if (p.qty <= p.minQty) {
+                        low++;
+                    }
+                    if (diffDays < 0) {
+                        expired++;
+                    } else if (diffDays <= 90) {
+                        near++;
+                    }
+                }
+            });
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-low').innerText = low;
+            document.getElementById('stat-out').innerText = out;
+            document.getElementById('stat-expiry').innerText = near;
+            document.getElementById('stat-expired').innerText = expired;
+
+            const banner = document.getElementById('lowStockBanner');
+            if (low > 0 || out > 0 || near > 0) {
+                banner.classList.remove('hidden');
+                document.getElementById('bannerText').innerText = `تنبيه المخزون: يوجد ${out} أصناف منتهية المخزون، و ${low} أصناف أوشكت على النفاد، و ${near} قريبة الانتهاء!`;
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
+        function renderTable(filteredList = null) {
+            const tbody = document.getElementById('productTableBody');
+            const emptyState = document.getElementById('emptyState');
+            tbody.innerHTML = '';
+
+            const listToRender = filteredList || products;
+
+            if (listToRender.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            const today = new Date();
+
+            listToRender.forEach(p => {
+                const expiryDate = new Date(p.expiry);
+                const diffTime = expiryDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                let expiryBadge = '';
+                if (p.qty === 0) {
+                    expiryBadge = `<span class="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center gap-1"><i class="fa-solid fa-circle-xmark"></i> مخزون 0</span>`;
+                } else if (diffDays < 0) {
+                    expiryBadge = `<span class="bg-red-50 text-red-600 border border-red-200 px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center gap-1"><i class="fa-solid fa-ban"></i> منتهي الصلاحية</span>`;
+                } else if (diffDays <= 90) {
+                    expiryBadge = `<span class="bg-orange-50 text-orange-600 border border-orange-200 px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center gap-1"><i class="fa-solid fa-clock"></i> ينتهي بـ (${diffDays} يوم)</span>`;
+                } else {
+                    expiryBadge = `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center gap-1"><i class="fa-solid fa-check"></i> سليم (${diffDays} يوم)</span>`;
+                }
+
+                let stockStatusClass = 'text-slate-800';
+                if (p.qty === 0) stockStatusClass = 'text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded';
+                else if (p.qty <= p.minQty) stockStatusClass = 'text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded';
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/80 transition border-b border-slate-100';
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-slate-900">${escapeHtml(p.brand || '-')}</td>
+                    <td class="p-4 font-bold text-slate-800">${escapeHtml(p.name)}</td>
+                    <td class="p-4 text-slate-600"><span class="bg-slate-100 border border-slate-200/80 px-2.5 py-1 rounded-lg text-xs font-semibold">${escapeHtml(p.category)}</span></td>
+                    <td class="p-4 text-slate-600 font-medium">${escapeHtml(p.flavorSize)}</td>
+                    <td class="p-4 text-slate-600 font-mono text-xs">${escapeHtml(p.expiry)}</td>
+                    <td class="p-4 text-center">
+                        <div class="inline-flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/80">
+                            <button onclick="adjustQty('${p.id}', -1)" class="w-7 h-7 bg-white hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-sm transition flex items-center justify-center">-</button>
+                            <span class="w-9 text-center font-black text-xs sm:text-sm ${stockStatusClass}">${p.qty}</span>
+                            <button onclick="adjustQty('${p.id}', 1)" class="w-7 h-7 bg-white hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-sm transition flex items-center justify-center">+</button>
+                        </div>
+                    </td>
+                    <td class="p-4 text-center font-bold text-slate-500">${p.minQty}</td>
+                    <td class="p-4 text-center">${expiryBadge}</td>
+                    <td class="p-4 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="openAiImageModalForProduct('${p.id}')" class="w-8 h-8 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 rounded-xl transition flex items-center justify-center shadow-sm" title="مولد الصور AI"><i class="fa-solid fa-wand-magic-sparkles text-xs"></i></button>
+                            <button onclick="editProduct('${p.id}')" class="w-8 h-8 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 rounded-xl transition flex items-center justify-center shadow-sm" title="تعديل"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="confirmDeleteProduct('${p.id}')" class="w-8 h-8 bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 rounded-xl transition flex items-center justify-center shadow-sm" title="حذف"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterProducts() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const today = new Date();
+
+            const filtered = products.filter(p => {
+                const brandStr = (p.brand || '').toLowerCase();
+                const matchQuery = brandStr.includes(query) || p.name.toLowerCase().includes(query) || p.flavorSize.toLowerCase().includes(query);
+                const matchCategory = category === '' || p.category === category;
+
+                let matchStatus = true;
+                const expiryDate = new Date(p.expiry);
+                const diffDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+
+                if (status === 'low') {
+                    matchStatus = p.qty > 0 && p.qty <= p.minQty;
+                } else if (status === 'out') {
+                    matchStatus = p.qty === 0;
+                } else if (status === 'near') {
+                    matchStatus = p.qty > 0 && diffDays >= 0 && diffDays <= 90;
+                } else if (status === 'expired') {
+                    matchStatus = p.qty > 0 && diffDays < 0;
+                } else if (status === 'ok') {
+                    matchStatus = p.qty > 0 && diffDays > 90 && p.qty > p.minQty;
+                }
+
+                return matchQuery && matchCategory && matchStatus;
+            });
+
+            renderTable(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            filterProducts();
+        }
+
+        function adjustQty(id, delta) {
+            const p = products.find(item => item.id === id);
+            if (!p) return;
+            p.qty = Math.max(0, p.qty + delta);
+            saveToLocalStorage();
+            renderTable();
+            updateDashboard();
+        }
+
+        function confirmDeleteProduct(id) {
+            const p = products.find(item => item.id === id);
+            if (!p) return;
+            pendingDeleteId = id;
+            document.getElementById('confirmBody').innerText = `هل أنت تأكد من إزالة المنتج "${p.name}" نهائياً من المخزون؟`;
+            document.getElementById('confirmBtn').onclick = executeDeleteProduct;
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+            pendingDeleteId = null;
+        }
+
+        function executeDeleteProduct() {
+            if (!pendingDeleteId) return;
+            products = products.filter(item => item.id !== pendingDeleteId);
+            saveToLocalStorage();
+            renderTable();
+            updateDashboard();
+            closeConfirmModal();
+            showMessage('تم الحذف', 'تم حذف المنتج بنجاح.');
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').innerText = 'إضافة منتج جديد للمخزون';
+            document.getElementById('editProductId').value = '';
+            document.getElementById('productForm').reset();
+            populateCategoryDropdowns();
+            document.getElementById('productModal').classList.remove('hidden');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
+        function editProduct(id) {
+            const p = products.find(item => item.id === id);
+            if (!p) return;
+
+            document.getElementById('modalTitle').innerText = 'تعديل بيانات المنتج';
+            document.getElementById('editProductId').value = p.id;
+            document.getElementById('productBrand').value = p.brand || '';
+            document.getElementById('productName').value = p.name;
+            populateCategoryDropdowns();
+            document.getElementById('productCategory').value = p.category;
+            document.getElementById('productFlavorSize').value = p.flavorSize;
+            document.getElementById('productExpiry').value = p.expiry;
+            document.getElementById('productQty').value = p.qty;
+            document.getElementById('productMinQty').value = p.minQty;
+
+            document.getElementById('productModal').classList.remove('hidden');
+        }
+
+        function saveProduct(event) {
+            event.preventDefault();
+            const editId = document.getElementById('editProductId').value;
+            const brand = document.getElementById('productBrand').value.trim();
+            const name = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const flavorSize = document.getElementById('productFlavorSize').value.trim();
+            const expiry = document.getElementById('productExpiry').value;
+            const qty = parseInt(document.getElementById('productQty').value);
+            const minQty = parseInt(document.getElementById('productMinQty').value);
+
+            if (editId) {
+                const p = products.find(item => item.id === editId);
+                if (p) {
+                    p.brand = brand;
+                    p.name = name;
+                    p.category = category;
+                    p.flavorSize = flavorSize;
+                    p.expiry = expiry;
+                    p.qty = qty;
+                    p.minQty = minQty;
+                }
+                showMessage('تم التحديث', 'تم حفظ التعديلات بنجاح.');
+            } else {
+                const newProd = {
+                    id: Date.now().toString(),
+                    brand, name, category, flavorSize, expiry, qty, minQty
+                };
+                products.push(newProd);
+                showMessage('تمت الإضافة', 'تم إضافة المنتج الجديد للمخزون.');
+            }
+
+            saveToLocalStorage();
+            renderTable();
+            updateDashboard();
+            closeProductModal();
+        }
+
+        function openOrderModal() {
+            document.getElementById('orderSupplierName').value = '';
+            document.getElementById('orderNotes').value = '';
+            document.getElementById('orderItemsContainer').innerHTML = '';
+            addOrderItemRow();
+            document.getElementById('orderModal').classList.remove('hidden');
+        }
+
+        function closeOrderModal() {
+            document.getElementById('orderModal').classList.add('hidden');
+        }
+
+        function addOrderItemRow() {
+            const container = document.getElementById('orderItemsContainer');
+            const rowId = 'order_row_' + Date.now() + Math.random().toString(36).substr(2, 4);
+            
+            let optionsHtml = '<option value="">اختر المنتج المستلم...</option>';
+            products.forEach(p => {
+                optionsHtml += `<option value="${p.id}">${p.brand ? p.brand + ' - ' : ''}${escapeHtml(p.name)} (${escapeHtml(p.flavorSize)})</option>`;
+            });
+
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = 'flex flex-col sm:flex-row gap-2.5 items-center bg-slate-50 p-2.5 rounded-2xl border border-slate-200';
+            div.innerHTML = `
+                <select class="order-product-select flex-grow bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm focus:outline-none focus:border-amber-500 w-full font-medium">
+                    ${optionsHtml}
+                </select>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <input type="number" min="1" value="5" placeholder="الكمية" class="order-qty-input w-24 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-center font-bold focus:outline-none focus:border-amber-500">
+                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-rose-500 hover:text-rose-700 p-2"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function submitPurchaseOrder() {
+            const supplier = document.getElementById('orderSupplierName').value.trim();
+            if (!supplier) {
+                showMessage('تنبيه', 'الرجاء إدخال اسم المورد أو الشركة.', 'error');
+                return;
+            }
+
+            const rows = document.querySelectorAll('#orderItemsContainer > div');
+            let updatedCount = 0;
+
+            rows.forEach(row => {
+                const select = row.querySelector('.order-product-select');
+                const qtyInput = row.querySelector('.order-qty-input');
+                const productId = select ? select.value : '';
+                const addedQty = qtyInput ? parseInt(qtyInput.value) || 0 : 0;
+
+                if (productId && addedQty > 0) {
+                    const p = products.find(item => item.id === productId);
+                    if (p) {
+                        p.qty += addedQty;
+                        updatedCount++;
+                    }
+                }
+            });
+
+            if (updatedCount === 0) {
+                showMessage('تنبيه', 'اختر صنفاً واحداً على الأقل وحدد كميته.', 'error');
+                return;
+            }
+
+            saveToLocalStorage();
+            renderTable();
+            updateDashboard();
+            closeOrderModal();
+            showMessage('تم استلام الطلبية', `تم إيداع الكميات بنجاح لـ ${updatedCount} منتج.`);
+        }
+
+        function openSalesModal() {
+            document.getElementById('salesItemsContainer').innerHTML = '';
+            addSalesItemRow();
+            document.getElementById('salesModal').classList.remove('hidden');
+        }
+
+        function closeSalesModal() {
+            document.getElementById('salesModal').classList.add('hidden');
+        }
+
+        function addSalesItemRow() {
+            const container = document.getElementById('salesItemsContainer');
+            const rowId = 'sales_row_' + Date.now() + Math.random().toString(36).substr(2, 4);
+            
+            let optionsHtml = '<option value="">اختر المنتج المباع...</option>';
+            products.forEach(p => {
+                optionsHtml += `<option value="${p.id}">${p.brand ? p.brand + ' - ' : ''}${escapeHtml(p.name)} (${escapeHtml(p.flavorSize)}) - المتاح: ${p.qty}</option>`;
+            });
+
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = 'flex flex-col sm:flex-row gap-2.5 items-center bg-slate-50 p-2.5 rounded-2xl border border-slate-200';
+            div.innerHTML = `
+                <select class="sales-product-select flex-grow bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm focus:outline-none focus:border-blue-500 w-full font-medium">
+                    ${optionsHtml}
+                </select>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <input type="number" min="1" value="1" placeholder="الكمية" class="sales-qty-input w-24 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-center font-bold focus:outline-none focus:border-blue-500">
+                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-rose-500 hover:text-rose-700 p-2"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function submitDailySales() {
+            const rows = document.querySelectorAll('#salesItemsContainer > div');
+            let deductedCount = 0;
+            let errors = [];
+
+            rows.forEach(row => {
+                const select = row.querySelector('.sales-product-select');
+                const qtyInput = row.querySelector('.sales-qty-input');
+                const productId = select ? select.value : '';
+                const soldQty = qtyInput ? parseInt(qtyInput.value) || 0 : 0;
+
+                if (productId && soldQty > 0) {
+                    const p = products.find(item => item.id === productId);
+                    if (p) {
+                        if (p.qty < soldQty) {
+                            errors.push(`الكمية المتاحة للمنتج "${p.name}" هي ${p.qty} فقط.`);
+                        } else {
+                            p.qty -= soldQty;
+                            deductedCount++;
+                        }
+                    }
+                }
+            });
+
+            if (errors.length > 0) {
+                showMessage('تنبيه المخزون', errors.join('\n'), 'error');
+                return;
+            }
+
+            if (deductedCount === 0) {
+                showMessage('تنبيه', 'الرجاء اختيار صنف وتحديد كمية البيع.', 'error');
+                return;
+            }
+
+            saveToLocalStorage();
+            renderTable();
+            updateDashboard();
+            closeSalesModal();
+            showMessage('تم تسجيل المبيعات', `تم خصم كميات ${deductedCount} منتج من المخزون بنجاح.`);
+        }
+
+        function openAiAssistantModal() {
+            document.getElementById('aiAssistantModal').classList.remove('hidden');
+        }
+
+        function closeAiAssistantModal() {
+            document.getElementById('aiAssistantModal').classList.add('hidden');
+        }
+
+        function askAiPrompt(promptText) {
+            document.getElementById('aiQueryInput').value = promptText;
+            sendAiQuery();
+        }
+
+        async function sendAiQuery() {
+            const inputEl = document.getElementById('aiQueryInput');
+            const query = inputEl.value.trim();
+            if (!query) return;
+
+            const chatContainer = document.getElementById('aiChatContainer');
+            
+            chatContainer.innerHTML += `
+                <div class="flex items-start gap-3 justify-end">
+                    <div class="bg-indigo-600 text-white p-3.5 rounded-2xl shadow-sm max-w-[85%] leading-relaxed font-medium">
+                        ${escapeHtml(query)}
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center flex-shrink-0 font-bold text-xs"><i class="fa-solid fa-user"></i></div>
+                </div>
+            `;
+            inputEl.value = '';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            const loadingId = 'loading_' + Date.now();
+            chatContainer.innerHTML += `
+                <div id="${loadingId}" class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 font-bold text-xs"><i class="fa-solid fa-robot"></i></div>
+                    <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200/80 text-slate-500 flex items-center gap-2 font-bold text-xs">
+                        <i class="fa-solid fa-spinner animate-spin text-indigo-600"></i> جاري تحليل المخزون عبر الذكاء الاصطناعي...
+                    </div>
+                </div>
+            `;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            const inventorySummary = products.map(p => 
+                `- Mfr: ${p.brand || 'N/A'}, Item: ${p.name}, Category: ${p.category}, Qty: ${p.qty}, MinQty: ${p.minQty}, Expiry: ${p.expiry}`
+            ).join('\n');
+
+            const systemPrompt = `أنت مساعد ذكي متخصص في إدارة مخزون محل مكملات غذائية (Nutrition Store). إليك المخزون الحالي:\n${inventorySummary}`;
+
+            try {
+                const apiKey = "";
+                let aiReply = "";
+
+                if (apiKey) {
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: query }] }],
+                            systemInstruction: { parts: [{ text: systemPrompt }] }
+                        })
+                    });
+                    const result = await response.json();
+                    aiReply = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                }
+
+                // Smart local fallback generator if no API Key provided or fails
+                if (!aiReply) {
+                    const lowItems = products.filter(p => p.qty <= p.minQty);
+                    const expiredItems = products.filter(p => new Date(p.expiry) < new Date());
+                    const today = new Date();
+                    const nearItems = products.filter(p => {
+                        const days = Math.ceil((new Date(p.expiry) - today) / (1000*60*60*24));
+                        return days >= 0 && days <= 90;
+                    });
+
+                    if (query.includes('أولويات') || query.includes('الشراء') || query.includes('نواقص')) {
+                        aiReply = `📊 **تقرير أولويات الطلب والشراء:**\n\n`;
+                        if (lowItems.length === 0) {
+                            aiReply += `✅ المخزون ممتاز حالياً، لا يوجد منتجات أوشكت على النفاد.\n`;
+                        } else {
+                            aiReply += `⚠️ **أهم الأصناف المطلوب طلبها فوراً:**\n`;
+                            lowItems.forEach(i => {
+                                aiReply += `• **${i.brand || ''} ${i.name}** (${i.flavorSize}): المتبقي ${i.qty} (الحد الأدنى: ${i.minQty})\n`;
+                            });
+                        }
+                    } else if (query.includes('عروض') || query.includes('صلاحية')) {
+                        aiReply = `🔥 **خطة وتوصيات العروض الترويجية:**\n\n`;
+                        if (nearItems.length === 0) {
+                            aiReply += `✅ جميع المنتجات تاريخ صلاحيتها ممتد ولا يتطلب تنزيلات عاجلة.\n`;
+                        } else {
+                            aiReply += `💡 **المنتجات القريبة الانتهاء التوصية بخصم 20%-35%:**\n`;
+                            nearItems.forEach(i => {
+                                aiReply += `• **${i.name}** - ينتهي في ${i.expiry}. اقترح عمل عرض (اشترِ واحد واحصل على BCAA مجاناً).\n`;
+                            });
+                        }
+                    } else if (query.includes('واتساب') || query.includes('رسالة') || query.includes('مورد')) {
+                        aiReply = `📱 **نص طلبية للمورد (مستعد للإرسال):**\n\nالسلام عليكم ورحمة الله،\nنرجو تزويدنا بطلب جديد لمحل المكملات الأصناف التالية:\n\n`;
+                        lowItems.forEach(i => {
+                            aiReply += `- ${i.brand || ''} ${i.name} (${i.flavorSize}) -> الكمية المطلوبة: 10 علب\n`;
+                        });
+                        aiReply += `\nشاكرين تعاونكم معنا.`;
+                    } else {
+                        aiReply = `بناءً على مخزون المحل الحالي (${products.length} صنف):\n- أصناف منتهية المخزون: ${products.filter(p=>p.qty===0).length}\n- أصناف تنبيه النواقص: ${lowItems.length}\n- أصناف قريبة الصلاحية: ${nearItems.length}\n\nكيف يمكنني مساعدتك في صياغة عروض أو مراجعة مبيعات محددة؟`;
+                    }
+                }
+
+                if (document.getElementById(loadingId)) document.getElementById(loadingId).remove();
+
+                chatContainer.innerHTML += `
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 font-bold text-xs"><i class="fa-solid fa-robot"></i></div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 max-w-[85%] text-slate-700 leading-relaxed whitespace-pre-wrap">
+                            ${escapeHtml(aiReply)}
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                if (document.getElementById(loadingId)) document.getElementById(loadingId).remove();
+                chatContainer.innerHTML += `
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center flex-shrink-0 font-bold text-xs"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="bg-rose-50 p-4 rounded-2xl shadow-sm border border-rose-100 text-rose-700 font-bold text-xs">
+                            عذراً، حدث خطأ أثناء الاتصال بالخدمة. يرجى إعادة المحاولة.
+                        </div>
+                    </div>
+                `;
+            }
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function openAiImageModalForProduct(id) {
+            activeImageProductId = id;
+            const p = products.find(item => item.id === id);
+            if (!p) return;
+
+            document.getElementById('aiImageProductName').innerText = `${p.brand ? p.brand + ' - ' : ''}${p.name} (${p.flavorSize})`;
+            document.getElementById('aiImagePreviewContainer').innerHTML = `
+                <div id="aiImagePlaceholder" class="text-center p-6 text-slate-400">
+                    <i class="fa-solid fa-wand-magic-sparkles text-4xl mb-2 text-indigo-500"></i>
+                    <p class="text-xs font-bold text-slate-600">اضغط لتوليد بوستر ورسمة ثلاثية الأبعاد احترافية للمنتج</p>
+                </div>
+            `;
+            document.getElementById('aiImageModal').classList.remove('hidden');
+        }
+
+        function closeAiImageModal() {
+            document.getElementById('aiImageModal').classList.add('hidden');
+            activeImageProductId = null;
+        }
+
+        async function generateProductImage() {
+            if (!activeImageProductId) return;
+            const p = products.find(item => item.id === activeImageProductId);
+            if (!p) return;
+
+            const previewContainer = document.getElementById('aiImagePreviewContainer');
+            previewContainer.innerHTML = `
+                <div class="flex flex-col items-center justify-center p-8 text-slate-500">
+                    <i class="fa-solid fa-spinner animate-spin text-3xl text-indigo-600 mb-3"></i>
+                    <p class="text-xs font-bold text-indigo-900">جاري صياغة وإنشاء التصميم التسويقي المخصص...</p>
+                </div>
+            `;
+
+            try {
+                // Generate high quality canvas banner mockup as live demo
+                setTimeout(() => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 400;
+                    canvas.height = 300;
+                    const ctx = canvas.getContext('2d');
+
+                    // Gradient Background
+                    const grad = ctx.createLinearGradient(0, 0, 400, 300);
+                    grad.addColorStop(0, '#0f172a');
+                    grad.addColorStop(1, '#1e1b4b');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, 0, 400, 300);
+
+                    // Decorative lighting glow
+                    const glow = ctx.createRadialGradient(200, 150, 10, 200, 150, 180);
+                    glow.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+                    glow.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = glow;
+                    ctx.fillRect(0, 0, 400, 300);
+
+                    // Product Tub Container Graphic
+                    ctx.fillStyle = '#1e293b';
+                    ctx.beginPath();
+                    ctx.roundRect(140, 80, 120, 160, 15);
+                    ctx.fill();
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    // Tub Lid
+                    ctx.fillStyle = '#0f172a';
+                    ctx.beginPath();
+                    ctx.roundRect(130, 65, 140, 25, 6);
+                    ctx.fill();
+
+                    // Brand Label on Container
+                    ctx.fillStyle = '#10b981';
+                    ctx.fillRect(140, 120, 120, 70);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 12px Cairo, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(p.brand || 'PREMIUM', 200, 142);
+
+                    ctx.fillStyle = '#0f172a';
+                    ctx.font = 'black 10px Cairo, sans-serif';
+                    ctx.fillText(p.name.substring(0, 18), 200, 160);
+
+                    ctx.fillStyle = '#6366f1';
+                    ctx.font = 'bold 11px Cairo, sans-serif';
+                    ctx.fillText(p.flavorSize, 200, 180);
+
+                    // Badge Stamp
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.beginPath();
+                    ctx.arc(330, 60, 30, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 10px Cairo, sans-serif';
+                    ctx.fillText('100% ORIGINAL', 330, 63);
+
+                    const dataUrl = canvas.toDataURL();
+                    previewContainer.innerHTML = `
+                        <img src="${dataUrl}" alt="${escapeHtml(p.name)}" class="w-full h-full object-cover rounded-2xl shadow-md">
+                    `;
+                }, 900);
+            } catch (err) {
+                previewContainer.innerHTML = `
+                    <div class="text-center p-6 text-rose-600">
+                        <i class="fa-solid fa-circle-xmark text-2xl mb-2"></i>
+                        <p class="text-xs font-bold">تعذر إنشاء التصميم، حاول مرة أخرى.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function openImportModal() {
+            document.getElementById('csvFileInput').value = '';
+            document.getElementById('importModal').classList.remove('hidden');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.add('hidden');
+        }
+
+        function downloadTemplate() {
+            const csvContent = "Brand,Name,Category,FlavorSize,ExpiryDate,Qty,MinQty\n" +
+                               "Optimum Nutrition,Gold Standard Whey,بروتين (Protein),شوكولاتة - 10lbs,2027-01-10,15,3\n" +
+                               "Olimp,BCAA Xplode,أحماض أمينية (BCAA / EAA),توت - 300g,2026-08-20,10,2";
+            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Nutrition_Store_Template.csv';
+            a.click();
+        }
+
+        function processCSVImport() {
+            const fileInput = document.getElementById('csvFileInput');
+            if (fileInput.files.length === 0) {
+                showMessage('تنبيه', 'الرجاء اختيار ملف CSV أولاً.', 'error');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                let addedCount = 0;
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    const cols = line.split(',');
+                    if (cols.length >= 7) {
+                        const newP = {
+                            id: (Date.now() + i).toString(),
+                            brand: cols[0].replace(/"/g, '').trim(),
+                            name: cols[1].replace(/"/g, '').trim(),
+                            category: cols[2].replace(/"/g, '').trim(),
+                            flavorSize: cols[3].replace(/"/g, '').trim(),
+                            expiry: cols[4].replace(/"/g, '').trim(),
+                            qty: parseInt(cols[5].trim()) || 0,
+                            minQty: parseInt(cols[6].trim()) || 2
+                        };
+                        products.push(newP);
+                        addedCount++;
+                    }
+                }
+
+                saveToLocalStorage();
+                renderTable();
+                updateDashboard();
+                closeImportModal();
+                showMessage('تم الاستيراد', `تم إضافة ${addedCount} منتج بنجاح إلى المخزون.`);
+            };
+            reader.readAsText(file);
+        }
+
+        function exportToCSV() {
+            let csv = '\uFEFFBrand,Name,Category,FlavorSize,ExpiryDate,Qty,MinQty\n';
+            products.forEach(p => {
+                csv += `"${p.brand || ''}","${p.name}","${p.category}","${p.flavorSize}","${p.expiry}",${p.qty},${p.minQty}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Nutrition_Inventory_' + new Date().toISOString().slice(0, 10) + '.csv';
+            a.click();
+        }
+
+        function showMessage(title, body, type = 'success') {
+            const iconEl = document.getElementById('msgIcon');
+            const titleEl = document.getElementById('msgTitle');
+            const bodyEl = document.getElementById('msgBody');
+
+            titleEl.innerText = title;
+            bodyEl.innerText = body;
+
+            if (type === 'error') {
+                iconEl.className = 'w-12 h-12 rounded-full mx-auto flex items-center justify-center text-xl mb-3 bg-rose-100 text-rose-600';
+                iconEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
+            } else {
+                iconEl.className = 'w-12 h-12 rounded-full mx-auto flex items-center justify-center text-xl mb-3 bg-emerald-100 text-emerald-600';
+                iconEl.innerHTML = '<i class="fa-solid fa-check"></i>';
+            }
+
+            document.getElementById('messageModal').classList.remove('hidden');
+        }
+
+        function closeMessageModal() {
+            document.getElementById('messageModal').classList.add('hidden');
+        }
+
+        function escapeHtml(text) {
+            if (typeof text !== 'string') return text;
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        window.onload = function() {
+            populateCategoryDropdowns();
+            renderTable();
+            updateDashboard();
+        };
+    </script>
+</body>
+</html>
