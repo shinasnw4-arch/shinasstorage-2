@@ -107,8 +107,11 @@
                     <input type="text" id="searchInput" placeholder="ابحث باسم المنتج، النكهة..." class="w-full pl-10 pr-4 py-1.5 rounded-lg border focus:ring-2 focus:ring-primary outline-none">
                     <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
                 </div>
+                <select id="categorySearchSelect" class="border rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-primary bg-white text-xs">
+                    <option value="all">كل التصنيفات</option>
+                </select>
                 <select id="filterSelect" class="border rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-primary bg-white">
-                    <option value="all">كل المنتجات</option>
+                    <option value="all">كل الحالات</option>
                     <option value="near">قريب الانتهاء</option>
                     <option value="expired">منتهي الصلاحية</option>
                     <option value="low">مخزون منخفض</option>
@@ -123,16 +126,16 @@
                 <table class="w-full whitespace-nowrap text-right">
                     <thead class="bg-gray-50 text-gray-600 text-xs">
                         <tr>
-                            <th class="px-2.5 py-2.5 w-8 text-center">
-                                <input type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll(this)" class="rounded border-gray-300 text-primary focus:ring-primary w-4 h-4 cursor-pointer">
+                            <th class="px-1.5 py-2 w-6 text-center">
+                                <input type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll(this)" class="rounded border-gray-300 text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer">
                             </th>
-                            <th class="px-3 py-2.5 font-semibold">اسم المنتج</th>
-                            <th class="px-3 py-2.5 font-semibold">التصنيف</th>
-                            <th class="px-3 py-2.5 font-semibold">النكهة/الحجم</th>
-                            <th class="px-3 py-2.5 font-semibold">الصلاحية</th>
-                            <th class="px-3 py-2.5 font-semibold text-center">المخزون</th>
-                            <th class="px-3 py-2.5 font-semibold text-center">الحالة</th>
-                            <th class="px-3 py-2.5 font-semibold text-center">إجراءات</th>
+                            <th class="px-2 py-2 font-semibold">اسم المنتج</th>
+                            <th class="px-2 py-2 font-semibold">التصنيف</th>
+                            <th class="px-2 py-2 font-semibold">النكهة/الحجم</th>
+                            <th class="px-2 py-2 font-semibold">الصلاحية</th>
+                            <th class="px-2 py-2 font-semibold text-center">المخزون</th>
+                            <th class="px-2 py-2 font-semibold text-center">الحالة</th>
+                            <th class="px-2 py-2 font-semibold text-center">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="inventoryTable" class="divide-y divide-gray-100 text-xs">
@@ -154,6 +157,22 @@
                 <h2 class="text-lg font-bold text-gray-800" id="productModalTitle">إضافة منتج جديد</h2>
                 <button onclick="closeModal('productModal')" class="text-gray-500 hover:text-red-500"><i class="fas fa-times fa-lg"></i></button>
             </div>
+            
+            <div id="aiScannerSection" class="p-4 bg-purple-50 border-b border-purple-100 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-purple-900 flex items-center gap-1.5">
+                        <i class="fas fa-wand-magic-sparkles text-purple-600"></i> تعبئة البيانات بالذكاء الاصطناعي من صورة المنتج
+                    </span>
+                    <label class="cursor-pointer bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm flex items-center gap-1">
+                        <i class="fas fa-upload"></i> اختر صورة علبة المنتج
+                        <input type="file" id="aiImageInput" accept="image/*" class="hidden" onchange="handleAIImageUpload(event)">
+                    </label>
+                </div>
+                <div id="aiLoadingIndicator" class="hidden flex items-center justify-center gap-2 py-2 text-purple-700 text-xs font-semibold">
+                    <i class="fas fa-spinner fa-spin"></i> جاري تحليل صورة المنتج واستخراج البيانات بالذكاء الاصطناعي...
+                </div>
+            </div>
+
             <form id="productForm" class="p-5 space-y-3">
                 <input type="hidden" id="prodId">
                 <div class="grid grid-cols-1 gap-3">
@@ -403,6 +422,7 @@
             updateDashboard();
             renderTable();
             populateCategoryDropdowns();
+            populateCategorySearchDropdown();
         }
 
         window.updateDashboard = function() {
@@ -427,6 +447,7 @@
         window.renderTable = function() {
             const tbody = document.getElementById('inventoryTable');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categorySearchVal = document.getElementById('categorySearchSelect').value;
             const filterVal = document.getElementById('filterSelect').value;
             tbody.innerHTML = '';
             let hasVisibleRows = false;
@@ -435,32 +456,33 @@
                 const status = getProductStatus(p.stock, p.expiry, p.reorder);
                 const matchSearch = p.name.toLowerCase().includes(searchTerm) || 
                                     (p.flavor && p.flavor.toLowerCase().includes(searchTerm));
+                const matchCategory = categorySearchVal === 'all' || p.category === categorySearchVal;
                 const matchFilter = filterVal === 'all' || status.code === filterVal;
 
-                if (!matchSearch || !matchFilter) return;
+                if (!matchSearch || !matchCategory || !matchFilter) return;
                 hasVisibleRows = true;
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50 transition";
                 tr.innerHTML = `
-                    <td class="px-2.5 py-3 text-center">
-                        <input type="checkbox" value="${p.id}" onchange="handleRowSelection()" class="row-checkbox rounded border-gray-300 text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer">
+                    <td class="px-1.5 py-2.5 text-center">
+                        <input type="checkbox" value="${p.id}" onchange="handleRowSelection()" class="row-checkbox rounded border-gray-300 text-primary focus:ring-primary w-3 h-3 cursor-pointer">
                     </td>
-                    <td class="px-3 py-3 font-bold text-gray-800">${p.name}</td>
-                    <td class="px-3 py-3"><span class="bg-gray-100 px-2 py-0.5 rounded text-[11px] text-gray-600">${p.category}</span></td>
-                    <td class="px-3 py-3 text-gray-600">${p.flavor || '-'}</td>
-                    <td class="px-3 py-3 text-gray-600" dir="ltr">${p.expiry}</td>
-                    <td class="px-3 py-3">
+                    <td class="px-2 py-2.5 font-bold text-gray-800">${p.name}</td>
+                    <td class="px-2 py-2.5"><span class="bg-gray-100 px-2 py-0.5 rounded text-[11px] text-gray-600">${p.category}</span></td>
+                    <td class="px-2 py-2.5 text-gray-600">${p.flavor || '-'}</td>
+                    <td class="px-2 py-2.5 text-gray-600" dir="ltr">${p.expiry}</td>
+                    <td class="px-2 py-2.5">
                         <div class="flex items-center justify-center gap-1.5">
-                            <button onclick="quickUpdateStock('${p.id}', -1)" class="w-6 h-6 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center"><i class="fas fa-minus text-[10px]"></i></button>
-                            <span class="font-bold w-6 text-center text-sm ${p.stock == 0 ? 'text-red-500' : ''}">${p.stock}</span>
-                            <button onclick="quickUpdateStock('${p.id}', 1)" class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200 flex items-center justify-center"><i class="fas fa-plus text-[10px]"></i></button>
+                            <button onclick="quickUpdateStock('${p.id}', -1)" class="w-5 h-5 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center"><i class="fas fa-minus text-[9px]"></i></button>
+                            <span class="font-bold w-5 text-center text-xs ${p.stock == 0 ? 'text-red-500' : ''}">${p.stock}</span>
+                            <button onclick="quickUpdateStock('${p.id}', 1)" class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200 flex items-center justify-center"><i class="fas fa-plus text-[9px]"></i></button>
                         </div>
                     </td>
-                    <td class="px-3 py-3 text-center">
+                    <td class="px-2 py-2.5 text-center">
                         <span class="px-2 py-0.5 rounded-full text-[11px] border ${status.class}">${status.label}</span>
                     </td>
-                    <td class="px-3 py-3 text-center">
+                    <td class="px-2 py-2.5 text-center">
                         <button onclick="editProduct('${p.id}')" class="text-blue-500 hover:text-blue-700 mx-1" title="تعديل"><i class="fas fa-edit"></i></button>
                         <button onclick="deleteProduct('${p.id}')" class="text-red-500 hover:text-red-700 mx-1" title="حذف"><i class="fas fa-trash-alt"></i></button>
                     </td>
@@ -522,8 +544,137 @@
             document.getElementById('productForm').reset();
             document.getElementById('prodId').value = '';
             document.getElementById('productModalTitle').textContent = 'إضافة منتج جديد';
+            document.getElementById('aiScannerSection').style.display = 'block'; // إظهار قسم الذكاء الاصطناعي عند الإضافة الجديدة
             populateCategoryDropdowns();
             openModal('productModal');
+        }
+
+        window.editProduct = function(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            document.getElementById('prodId').value = product.id;
+            document.getElementById('prodName').value = product.name;
+            document.getElementById('prodCategory').value = product.category;
+            document.getElementById('prodFlavor').value = product.flavor || '';
+            document.getElementById('prodExpiry').value = product.expiry;
+            document.getElementById('prodStock').value = product.stock;
+            document.getElementById('prodReorder').value = product.reorder;
+            document.getElementById('productModalTitle').textContent = 'تعديل بيانات منتج';
+            document.getElementById('aiScannerSection').style.display = 'none'; // إخفاء عند التعديل اليدوي
+            openModal('productModal');
+        }
+
+        // --- AI Image Scanner Handler ---
+        window.handleAIImageUpload = async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const loadingEl = document.getElementById('aiLoadingIndicator');
+            loadingEl.classList.remove('hidden');
+
+            try {
+                // قراءة الصورة وتحويلها إلى Base64
+                const base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                });
+
+                const systemPrompt = "أنت مساعد ذكي متخصص في تحليل صور المكملات الغذائية. استخرج بيانات المنتج بدقة وضعها في ملف JSON يحوي الحقول التالية باللغة العربية: name (اسم المنتج)، category (اختر بدقة من التصنيفات التالية: بروتين، كرياتين، فيتامينات، حوارق دهون، أحماض أمينية، طاقة، سناك صحي، أو اقترح تصنيف مناسب)، flavor (النكهة أو الحجم إن وجدت مثل 5lbs أو شوكولاتة)، expiry (تاريخ الصلاحية بصيغة YYYY-MM-DD وإن لم تجده اقترح تاريخاً تقديريا بعد عامين من الآن)، stock (اكتب رقماً افتراضياً مثل 10)، reorder (الحد الأدنى واكتب 5).";
+                
+                const userQuery = "قم بتحليل صورة علبة المكمل الغذائي هذه واستخرج بياناتها بدقة.";
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [
+                        {
+                            role: "user",
+                            parts: [
+                                { text: userQuery },
+                                {
+                                    inlineData: {
+                                        mimeType: file.type || "image/jpeg",
+                                        data: base64Data
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                name: { type: "STRING" },
+                                category: { type: "STRING" },
+                                flavor: { type: "STRING" },
+                                expiry: { type: "STRING" },
+                                stock: { type: "NUMBER" },
+                                reorder: { type: "NUMBER" }
+                            },
+                            propertyOrdering: ["name", "category", "flavor", "expiry", "stock", "reorder"]
+                        }
+                    }
+                };
+
+                let response = null;
+                // تنفيذ استدعاء API مع نظام إعادة المحاولة (Exponential Backoff)
+                for (let attempt = 0; attempt < 3; attempt++) {
+                    try {
+                        const res = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (res.ok) {
+                            response = await res.json();
+                            break;
+                        }
+                    } catch (err) {
+                        if (attempt === 2) throw err;
+                        await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));
+                    }
+                }
+
+                if (!response || !response.candidates || response.candidates.length === 0) {
+                    throw new Error("لم يتم استلام رد من نموذج الذكاء الاصطناعي");
+                }
+
+                const jsonText = response.candidates[0].content.parts[0].text;
+                const parsedData = JSON.parse(jsonText);
+
+                // تعبئة الحقول في النموذج تلقائياً
+                if (parsedData.name) document.getElementById('prodName').value = parsedData.name;
+                if (parsedData.category) {
+                    const catSelect = document.getElementById('prodCategory');
+                    // التحقق إذا كان التصنيف موجوداً أم إضافته تلقائياً
+                    let matchedOpt = Array.from(catSelect.options).find(opt => opt.value === parsedData.category);
+                    if (!matchedOpt && parsedData.category) {
+                        categories.push(parsedData.category);
+                        populateCategoryDropdowns();
+                        populateCategorySearchDropdown();
+                    }
+                    catSelect.value = parsedData.category;
+                }
+                if (parsedData.flavor) document.getElementById('prodFlavor').value = parsedData.flavor;
+                if (parsedData.expiry) document.getElementById('prodExpiry').value = parsedData.expiry;
+                if (parsedData.stock !== undefined) document.getElementById('prodStock').value = parsedData.stock;
+                if (parsedData.reorder !== undefined) document.getElementById('prodReorder').value = parsedData.reorder;
+
+                showToast('تمت تعبئة بيانات المنتج بنجاح بواسطة الذكاء الاصطناعي!');
+
+            } catch (error) {
+                console.error(error);
+                showToast('حدث خطأ أثناء تحليل الصورة، يرجى إدخال البيانات يدوياً.', 'error');
+            } finally {
+                loadingEl.classList.add('hidden');
+                event.target.value = ''; // إعادة تعيين حقل الملف
+            }
         }
 
         document.getElementById('productForm').addEventListener('submit', function(e) {
@@ -644,6 +795,17 @@
                 opt.value = c; opt.textContent = c;
                 select.appendChild(opt);
             });
+        }
+
+        window.populateCategorySearchDropdown = function() {
+            const select = document.getElementById('categorySearchSelect');
+            const currentVal = select.value;
+            let options = '<option value="all">كل التصنيفات</option>';
+            categories.forEach(c => {
+                options += `<option value="${c}">${c}</option>`;
+            });
+            select.innerHTML = options;
+            select.value = currentVal;
         }
 
         window.renderCategories = function() {
@@ -772,6 +934,7 @@
         }
 
         document.getElementById('searchInput').addEventListener('input', renderTable);
+        document.getElementById('categorySearchSelect').addEventListener('change', renderTable);
         document.getElementById('filterSelect').addEventListener('change', renderTable);
 
         // Initial render on load
