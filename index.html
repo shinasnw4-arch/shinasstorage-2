@@ -41,7 +41,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <i class="fas fa-dumbbell text-2xl text-secondary"></i>
-                <h1 class="text-xl font-bold tracking-wider">نظام إدارة مخزون المكملات <span id="syncStatus" class="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded-full mr-2">جاري الاتصال بالسحابة...</span></h1>
+                <h1 class="text-xl font-bold tracking-wider">نظام إدارة مخزون المكملات <span id="syncStatus" class="text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full mr-2">متصل وسريع (جاهز للاستخدام)</span></h1>
             </div>
             <div class="flex gap-2">
                 <button onclick="openModal('salesModal')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition font-bold shadow-md">
@@ -341,112 +341,20 @@
         <span id="toastMsg">رسالة</span>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, deleteDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <script>
+        let products = JSON.parse(localStorage.getItem('nutrition_store_products')) || [
+            { id: '1', name: 'Gold Standard Whey', brand: 'Optimum Nutrition', category: 'بروتين', flavor: 'شوكولاتة - 5lbs', expiry: '2026-12-31', stock: 12, reorder: 5 },
+            { id: '2', name: 'Creatine Monohydrate', brand: 'Applied Nutrition', category: 'كرياتين', flavor: 'بدون نكهة - 300g', expiry: '2027-06-15', stock: 3, reorder: 5 },
+            { id: '3', name: 'Multi Vitamin Pack', brand: 'Universal', category: 'فيتامينات', flavor: 'حبوب - 44 كيس', expiry: '2026-04-10', stock: 0, reorder: 4 }
+        ];
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'nutrition-store-default';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "demo", projectId: "demo" };
+        let categories = JSON.parse(localStorage.getItem('nutrition_store_categories')) || ['بروتين', 'كرياتين', 'فيتامينات', 'حوارق دهون', 'أحماض أمينية', 'طاقة', 'سناك صحي'];
 
-        let app, db, auth;
-        let products = [];
-        let categories = ['بروتين', 'كرياتين', 'فيتامينات', 'حوارق دهون', 'أحماض أمينية', 'طاقة', 'سناك صحي'];
-
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-
-            const initAuth = async () => {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            };
-
-            initAuth().then(() => {
-                document.getElementById('syncStatus').textContent = 'متصل بالسحابة (متزامن)';
-                document.getElementById('syncStatus').className = 'text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full mr-2';
-                setupRealtimeSync();
-            }).catch(err => {
-                console.error("Auth error:", err);
-                document.getElementById('syncStatus').textContent = 'وضع غير متصل';
-                document.getElementById('syncStatus').className = 'text-xs bg-red-500 text-white px-2 py-0.5 rounded-full mr-2';
-            });
-        } catch (e) {
-            console.log("Fallback to offline mode due to config");
-        }
-
-        function setupRealtimeSync() {
-            if (!auth.currentUser) return;
-            const productsRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
-            onSnapshot(productsRef, (snapshot) => {
-                products = [];
-                snapshot.forEach(docSnap => {
-                    products.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                renderAll();
-            }, (error) => {
-                console.error("Firestore sync error:", error);
-            });
-
-            const categoriesRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
-            onSnapshot(categoriesRef, (snapshot) => {
-                if (!snapshot.empty) {
-                    categories = [];
-                    snapshot.forEach(docSnap => {
-                        categories.push(docSnap.data().name);
-                    });
-                }
-                renderAll();
-            }, (error) => {
-                console.error("Categories sync error:", error);
-            });
-        }
-
-        window.saveProductCloud = async function(product) {
-            products = products || [];
-            if (db && auth.currentUser) {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', product.id.toString());
-                await setDoc(docRef, product);
-            } else {
-                const idx = products.findIndex(p => p.id === product.id);
-                if(idx > -1) products[idx] = product; else products.push(product);
-                renderAll();
-            }
-        };
-
-        window.deleteProductCloud = async function(id) {
-            if (db && auth.currentUser) {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', id.toString());
-                await deleteDoc(docRef);
-            } else {
-                products = products.filter(p => p.id !== id);
-                renderAll();
-            }
-        };
-
-        window.addCategoryCloud = async function(catName) {
-            if(!categories.includes(catName)) {
-                categories.push(catName);
-                if (db && auth.currentUser) {
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'categories', catName);
-                    await setDoc(docRef, { name: catName });
-                }
-                renderAll();
-            }
-        };
-
-        window.deleteCategoryCloud = async function(catName) {
-            categories = categories.filter(c => c !== catName);
-            if (db && auth.currentUser) {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'categories', catName);
-                await deleteDoc(docRef);
-            }
+        function saveToStorage() {
+            localStorage.setItem('nutrition_store_products', JSON.stringify(products));
+            localStorage.setItem('nutrition_store_categories', JSON.stringify(categories));
             renderAll();
-        };
+        }
 
         // --- Utility Functions ---
         window.showToast = function(message, type = 'success') {
@@ -609,10 +517,9 @@
             `;
             document.body.appendChild(customConfirm);
             document.getElementById('cancelBulk').onclick = () => customConfirm.remove();
-            document.getElementById('confirmBulk').onclick = async () => {
-                for(let id of idsToDelete) {
-                    await deleteProductCloud(id);
-                }
+            document.getElementById('confirmBulk').onclick = () => {
+                products = products.filter(p => !idsToDelete.includes(p.id));
+                saveToStorage();
                 showToast(`تم حذف ${idsToDelete.length} منتج بنجاح`);
                 customConfirm.remove();
             };
@@ -626,7 +533,7 @@
             openModal('productModal');
         }
 
-        document.getElementById('productForm').addEventListener('submit', async function(e) {
+        document.getElementById('productForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const id = document.getElementById('prodId').value;
             const product = {
@@ -640,7 +547,13 @@
                 reorder: parseInt(document.getElementById('prodReorder').value)
             };
 
-            await saveProductCloud(product);
+            const idx = products.findIndex(p => p.id === product.id);
+            if(idx > -1) {
+                products[idx] = product;
+            } else {
+                products.push(product);
+            }
+            saveToStorage();
             showToast(id ? 'تم تحديث بيانات المنتج' : 'تمت إضافة المنتج بنجاح');
             closeModal('productModal');
         });
@@ -676,20 +589,21 @@
             `;
             document.body.appendChild(customConfirm);
             document.getElementById('cancelDel').onclick = () => customConfirm.remove();
-            document.getElementById('confirmDel').onclick = async () => {
-                await deleteProductCloud(id);
+            document.getElementById('confirmDel').onclick = () => {
+                products = products.filter(p => p.id !== id);
+                saveToStorage();
                 showToast('تم حذف المنتج بنجاح');
                 customConfirm.remove();
             };
         }
 
-        window.quickUpdateStock = async function(id, change) {
+        window.quickUpdateStock = function(id, change) {
             const product = products.find(p => p.id === id);
             if (product) {
                 let newStock = parseInt(product.stock) + change;
                 if (newStock < 0) newStock = 0;
                 product.stock = newStock;
-                await saveProductCloud(product);
+                saveToStorage();
             }
         }
 
@@ -704,20 +618,20 @@
             salesSelect.innerHTML = options;
         }
 
-        document.getElementById('orderForm').addEventListener('submit', async function(e) {
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const id = document.getElementById('orderProductSelect').value;
             const qty = parseInt(document.getElementById('orderQty').value);
             const product = products.find(p => p.id === id);
             if(product) {
                 product.stock += qty;
-                await saveProductCloud(product);
+                saveToStorage();
                 showToast(`تمت إضافة ${qty} وحدة إلى ${product.name}`);
                 closeModal('orderModal');
             }
         });
 
-        document.getElementById('salesForm').addEventListener('submit', async function(e) {
+        document.getElementById('salesForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const id = document.getElementById('salesProductSelect').value;
             const qty = parseInt(document.getElementById('salesQty').value);
@@ -725,7 +639,7 @@
             if(product) {
                 if(product.stock < qty) { showToast('خطأ: الكمية المباعة أكبر من المخزون المتاح!', 'error'); return; }
                 product.stock -= qty;
-                await saveProductCloud(product);
+                saveToStorage();
                 showToast(`تم خصم ${qty} وحدة من ${product.name}`);
                 closeModal('salesModal');
             }
@@ -752,20 +666,22 @@
             });
         }
 
-        window.addCategory = async function() {
+        window.addCategory = function() {
             const input = document.getElementById('newCategoryInput');
             const val = input.value.trim();
             if(val && !categories.includes(val)) {
-                await addCategoryCloud(val);
+                categories.push(val);
+                saveToStorage();
                 input.value = '';
                 showToast('تمت إضافة التصنيف بنجاح');
             }
         }
 
-        window.deleteCategoryHandler = async function(catName) {
+        window.deleteCategoryHandler = function(catName) {
             const catInUse = products.some(p => p.category === catName);
             if(catInUse) { showToast('لا يمكن حذف تصنيف يحتوي على منتجات!', 'error'); return; }
-            await deleteCategoryCloud(catName);
+            categories = categories.filter(c => c !== catName);
+            saveToStorage();
             showToast('تم حذف التصنيف');
             renderCategories();
         }
@@ -789,7 +705,7 @@
             if (!file) { showToast('الرجاء اختيار ملف أولاً', 'error'); return; }
 
             const reader = new FileReader();
-            reader.onload = async function(e) {
+            reader.onload = function(e) {
                 const lines = e.target.result.split('\n').filter(line => line.trim() !== '');
                 let added = 0, skipped = 0;
                 
@@ -808,14 +724,15 @@
                         };
                         const isDuplicate = products.some(p => p.name === newProduct.name && p.brand === newProduct.brand && p.flavor === newProduct.flavor && p.expiry === newProduct.expiry);
                         if (!isDuplicate) {
-                            if(!categories.includes(newProduct.category)) await addCategoryCloud(newProduct.category);
-                            await saveProductCloud(newProduct);
+                            if(!categories.includes(newProduct.category)) categories.push(newProduct.category);
+                            products.push(newProduct);
                             added++;
                         } else {
                             skipped++;
                         }
                     }
                 }
+                saveToStorage();
                 closeModal('importModal');
                 fileInput.value = '';
                 showToast(`تم استيراد ${added} منتج وتخطي ${skipped} مكرر.`);
@@ -867,6 +784,9 @@
 
         document.getElementById('searchInput').addEventListener('input', renderTable);
         document.getElementById('filterSelect').addEventListener('change', renderTable);
+
+        // Initial render on load
+        window.onload = renderAll;
     </script>
 </body>
 </html>
