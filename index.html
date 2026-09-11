@@ -44,17 +44,17 @@
                 <h1 class="text-xl font-bold tracking-wider">نظام إدارة مخزون المكملات <span id="syncStatus" class="text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full mr-2">متصل وسريع (جاهز للاستخدام)</span></h1>
             </div>
             <div class="flex gap-2">
-                <button onclick="openModal('salesModal')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition font-bold shadow-md">
-                    <i class="fas fa-minus-circle ml-1"></i> تسجيل مبيعات اليوم
-                </button>
-                <button onclick="openModal('orderModal')" class="bg-secondary hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm transition font-bold shadow-md">
-                    <i class="fas fa-plus-circle ml-1"></i> إدخال طلبية جديدة
-                </button>
-            </div>
+            <button onclick="openModal('salesModal')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm transition font-bold shadow-md">
+                <i class="fas fa-minus-circle ml-1"></i> تسجيل مبيعات اليوم
+            </button>
+            <button onclick="openModal('orderModal')" class="bg-secondary hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm transition font-bold shadow-md">
+                <i class="fas fa-plus-circle ml-1"></i> إدخال طلبية جديدة
+            </button>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         <!-- KPI Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
@@ -83,31 +83,31 @@
         <!-- Action Bar -->
         <div class="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-col lg:flex-row justify-between gap-4 items-center">
             <div class="flex flex-wrap gap-2 w-full lg:w-auto items-center">
-                <button onclick="openProductModal()" class="bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition">
+                <button onclick="openProductModal()" class="bg-primary hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm transition">
                     <i class="fas fa-plus ml-1"></i> منتج جديد
                 </button>
-                <button onclick="openModal('categoryModal')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition">
+                <button onclick="openModal('categoryModal')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm transition">
                     <i class="fas fa-tags ml-1"></i> إدارة التصنيفات
                 </button>
-                <button onclick="openShortagesModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm transition font-bold shadow-sm">
+                <button onclick="openShortagesModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-sm transition font-bold shadow-sm">
                     <i class="fas fa-clipboard-list ml-1"></i> طباعة النواقص
                 </button>
-                <button id="bulkDeleteBtn" onclick="confirmBulkDelete()" class="hidden bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition font-bold shadow-sm animate-pulse">
+                <button id="bulkDeleteBtn" onclick="confirmBulkDelete()" class="hidden bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm transition font-bold shadow-sm animate-pulse">
                     <i class="fas fa-trash-alt ml-1"></i> حذف المحددة (<span id="selectedCountBadge">0</span>)
                 </button>
-                <button onclick="openModal('importModal')" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm transition">
+                <button onclick="openModal('importModal')" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1.5 rounded-lg text-sm transition">
                     <i class="fas fa-file-import ml-1"></i> استيراد
                 </button>
-                <button onclick="exportToCSV()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm transition">
+                <button onclick="exportToCSV()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm transition">
                     <i class="fas fa-file-export ml-1"></i> تصدير
                 </button>
             </div>
             <div class="flex gap-2 w-full lg:w-1/2">
                 <div class="relative flex-grow">
-                    <input type="text" id="searchInput" placeholder="ابحث باسم المنتج، الشركة المصنعة، النكهة..." class="w-full pl-10 pr-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary outline-none">
-                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="ابحث باسم المنتج، النكهة..." class="w-full pl-10 pr-4 py-1.5 rounded-lg border focus:ring-2 focus:ring-primary outline-none">
+                    <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
                 </div>
-                <select id="filterSelect" class="border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary bg-white">
+                <select id="filterSelect" class="border rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-primary bg-white">
                     <option value="all">كل المنتجات</option>
                     <option value="near">قريب الانتهاء</option>
                     <option value="expired">منتهي الصلاحية</option>
@@ -121,22 +121,21 @@
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full whitespace-nowrap text-right">
-                    <thead class="bg-gray-50 text-gray-600 text-sm">
+                    <thead class="bg-gray-50 text-gray-600 text-xs">
                         <tr>
-                            <th class="px-4 py-3 w-10 text-center">
+                            <th class="px-2.5 py-2.5 w-8 text-center">
                                 <input type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll(this)" class="rounded border-gray-300 text-primary focus:ring-primary w-4 h-4 cursor-pointer">
                             </th>
-                            <th class="px-6 py-3 font-semibold">اسم المنتج</th>
-                            <th class="px-6 py-3 font-semibold">الشركة المصنعة</th>
-                            <th class="px-6 py-3 font-semibold">التصنيف</th>
-                            <th class="px-6 py-3 font-semibold">النكهة/الحجم</th>
-                            <th class="px-6 py-3 font-semibold">الصلاحية</th>
-                            <th class="px-6 py-3 font-semibold text-center">المخزون (تعديل سريع)</th>
-                            <th class="px-6 py-3 font-semibold text-center">الحالة</th>
-                            <th class="px-6 py-3 font-semibold text-center">إجراءات</th>
+                            <th class="px-3 py-2.5 font-semibold">اسم المنتج</th>
+                            <th class="px-3 py-2.5 font-semibold">التصنيف</th>
+                            <th class="px-3 py-2.5 font-semibold">النكهة/الحجم</th>
+                            <th class="px-3 py-2.5 font-semibold">الصلاحية</th>
+                            <th class="px-3 py-2.5 font-semibold text-center">المخزون</th>
+                            <th class="px-3 py-2.5 font-semibold text-center">الحالة</th>
+                            <th class="px-3 py-2.5 font-semibold text-center">إجراءات</th>
                         </tr>
                     </thead>
-                    <tbody id="inventoryTable" class="divide-y divide-gray-100 text-sm">
+                    <tbody id="inventoryTable" class="divide-y divide-gray-100 text-xs">
                         <!-- Rows populated by JS -->
                     </tbody>
                 </table>
@@ -150,46 +149,44 @@
 
     <!-- Product Add/Edit Modal -->
     <div id="productModal" class="modal fixed inset-0 z-50 items-center justify-center">
-        <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div class="p-6 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
-                <h2 class="text-xl font-bold text-gray-800" id="productModalTitle">إضافة منتج جديد</h2>
+        <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-lg max-h-[90vh] overflow-y-auto">
+            <div class="p-5 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
+                <h2 class="text-lg font-bold text-gray-800" id="productModalTitle">إضافة منتج جديد</h2>
                 <button onclick="closeModal('productModal')" class="text-gray-500 hover:text-red-500"><i class="fas fa-times fa-lg"></i></button>
             </div>
-            <form id="productForm" class="p-6 space-y-4">
+            <form id="productForm" class="p-5 space-y-3">
                 <input type="hidden" id="prodId">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-3">
                     <div>
-                        <label class="block text-sm font-semibold mb-1">اسم المنتج*</label>
-                        <input type="text" id="prodName" required class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-primary">
+                        <label class="block text-xs font-semibold mb-1">اسم المنتج*</label>
+                        <input type="text" id="prodName" required class="w-full border rounded p-1.5 text-sm outline-none focus:ring-2 focus:ring-primary">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold mb-1">الشركة المصنعة*</label>
-                        <input type="text" id="prodBrand" required class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-primary">
+                        <label class="block text-xs font-semibold mb-1">التصنيف*</label>
+                        <select id="prodCategory" required class="w-full border rounded p-1.5 text-sm outline-none focus:ring-2 focus:ring-primary bg-white"></select>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold mb-1">التصنيف*</label>
-                        <select id="prodCategory" required class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-primary bg-white"></select>
+                        <label class="block text-xs font-semibold mb-1">النكهة / الحجم</label>
+                        <input type="text" id="prodFlavor" class="w-full border rounded p-1.5 text-sm outline-none focus:ring-2 focus:ring-primary">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold mb-1">النكهة / الحجم</label>
-                        <input type="text" id="prodFlavor" class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-primary">
+                        <label class="block text-xs font-semibold mb-1">تاريخ الصلاحية*</label>
+                        <input type="date" id="prodExpiry" required class="w-full border rounded p-1.5 text-sm outline-none focus:ring-2 focus:ring-primary text-left" dir="ltr">
                     </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-1">تاريخ الصلاحية*</label>
-                        <input type="date" id="prodExpiry" required class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-primary text-left" dir="ltr">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-1">الكمية الحالية*</label>
-                        <input type="number" id="prodStock" required min="0" class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-primary">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-1">الحد الأدنى للطلب*</label>
-                        <input type="number" id="prodReorder" required min="1" value="5" class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-primary">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">الكمية الحالية*</label>
+                            <input type="number" id="prodStock" required min="0" class="w-full border rounded p-1.5 text-sm outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">الحد الأدنى للطلب*</label>
+                            <input type="number" id="prodReorder" required min="1" value="5" class="w-full border rounded p-1.5 text-sm outline-none focus:ring-2 focus:ring-primary">
+                        </div>
                     </div>
                 </div>
-                <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
-                    <button type="button" onclick="closeModal('productModal')" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">إلغاء</button>
-                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600">حفظ المنتج</button>
+                <div class="flex justify-end gap-2 mt-4 pt-3 border-t">
+                    <button type="button" onclick="closeModal('productModal')" class="px-3 py-1.5 bg-gray-200 rounded text-xs hover:bg-gray-300">إلغاء</button>
+                    <button type="submit" class="px-3 py-1.5 bg-primary text-white rounded text-xs hover:bg-blue-600">حفظ المنتج</button>
                 </div>
             </form>
         </div>
@@ -198,16 +195,16 @@
     <!-- Category Management Modal -->
     <div id="categoryModal" class="modal fixed inset-0 z-50 items-center justify-center">
         <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-md">
-            <div class="p-6 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
-                <h2 class="text-xl font-bold">إدارة التصنيفات</h2>
+            <div class="p-5 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
+                <h2 class="text-lg font-bold">إدارة التصنيفات</h2>
                 <button onclick="closeModal('categoryModal')" class="text-gray-500 hover:text-red-500"><i class="fas fa-times fa-lg"></i></button>
             </div>
-            <div class="p-6">
-                <div class="flex gap-2 mb-4">
-                    <input type="text" id="newCategoryInput" placeholder="اسم التصنيف الجديد..." class="flex-grow border rounded p-2 outline-none focus:ring-2 focus:ring-primary">
-                    <button onclick="addCategory()" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600">إضافة</button>
+            <div class="p-5">
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="newCategoryInput" placeholder="اسم التصنيف الجديد..." class="flex-grow border rounded p-1.5 text-sm outline-none focus:ring-2 focus:ring-primary">
+                    <button onclick="addCategory()" class="bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-blue-600">إضافة</button>
                 </div>
-                <ul id="categoriesList" class="space-y-2 max-h-60 overflow-y-auto"></ul>
+                <ul id="categoriesList" class="space-y-2 max-h-60 overflow-y-auto text-xs"></ul>
             </div>
         </div>
     </div>
@@ -215,17 +212,16 @@
     <!-- Import CSV Modal -->
     <div id="importModal" class="modal fixed inset-0 z-50 items-center justify-center">
         <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-lg">
-            <div class="p-6 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
-                <h2 class="text-xl font-bold">استيراد المنتجات (CSV)</h2>
+            <div class="p-5 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
+                <h2 class="text-lg font-bold">استيراد المنتجات (CSV)</h2>
                 <button onclick="closeModal('importModal')" class="text-gray-500 hover:text-red-500"><i class="fas fa-times fa-lg"></i></button>
             </div>
-            <div class="p-6 space-y-4">
-                <div class="bg-blue-50 text-blue-800 p-4 rounded text-sm">
+            <div class="p-5 space-y-3 text-xs">
+                <div class="bg-blue-50 text-blue-800 p-3 rounded">
                     <strong>تنبيه هام:</strong> ملف CSV يجب أن يحتوي على الأعمدة التالية بالترتيب وبدون ترويسة:
                     <br><br>
                     <ul class="list-disc list-inside">
                         <li>اسم المنتج</li>
-                        <li>الشركة المصنعة</li>
                         <li>التصنيف</li>
                         <li>النكهة/الحجم</li>
                         <li>الصلاحية (YYYY-MM-DD)</li>
@@ -233,10 +229,10 @@
                         <li>حد الطلب</li>
                     </ul>
                 </div>
-                <input type="file" id="csvFileInput" accept=".csv" class="block w-full border rounded p-2">
-                <div class="flex justify-end gap-3 mt-4">
-                    <button onclick="closeModal('importModal')" class="px-4 py-2 bg-gray-200 rounded">إلغاء</button>
-                    <button onclick="processImport()" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">تنفيذ الاستيراد</button>
+                <input type="file" id="csvFileInput" accept=".csv" class="block w-full border rounded p-1.5">
+                <div class="flex justify-end gap-2 mt-3">
+                    <button onclick="closeModal('importModal')" class="px-3 py-1.5 bg-gray-200 rounded">إلغاء</button>
+                    <button onclick="processImport()" class="px-3 py-1.5 bg-purple-500 text-white rounded hover:bg-purple-600">تنفيذ الاستيراد</button>
                 </div>
             </div>
         </div>
@@ -245,22 +241,22 @@
     <!-- Add Order Modal -->
     <div id="orderModal" class="modal fixed inset-0 z-50 items-center justify-center">
         <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-md">
-            <div class="p-6 border-b flex justify-between items-center bg-emerald-50 rounded-t-xl">
-                <h2 class="text-xl font-bold text-emerald-800"><i class="fas fa-truck-loading ml-2"></i>إدخال طلبية (زيادة مخزون)</h2>
+            <div class="p-5 border-b flex justify-between items-center bg-emerald-50 rounded-t-xl">
+                <h2 class="text-lg font-bold text-emerald-800"><i class="fas fa-truck-loading ml-2"></i>إدخال طلبية (زيادة مخزون)</h2>
                 <button onclick="closeModal('orderModal')" class="text-gray-500 hover:text-red-500"><i class="fas fa-times fa-lg"></i></button>
             </div>
-            <form id="orderForm" class="p-6 space-y-4">
+            <form id="orderForm" class="p-5 space-y-3 text-xs">
                 <div>
-                    <label class="block text-sm font-semibold mb-1">اختر المنتج</label>
-                    <select id="orderProductSelect" required class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-emerald-500 bg-white"></select>
+                    <label class="block font-semibold mb-1">اختر المنتج</label>
+                    <select id="orderProductSelect" required class="w-full border rounded p-1.5 outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-xs"></select>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1">الكمية المستلمة</label>
-                    <input type="number" id="orderQty" required min="1" class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-emerald-500">
+                    <label class="block font-semibold mb-1">الكمية المستلمة</label>
+                    <input type="number" id="orderQty" required min="1" class="w-full border rounded p-1.5 outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
-                <div class="flex justify-end gap-3 mt-4">
-                    <button type="button" onclick="closeModal('orderModal')" class="px-4 py-2 bg-gray-200 rounded">إلغاء</button>
-                    <button type="submit" class="px-4 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600">إضافة للمخزون</button>
+                <div class="flex justify-end gap-2 mt-3">
+                    <button type="button" onclick="closeModal('orderModal')" class="px-3 py-1.5 bg-gray-200 rounded">إلغاء</button>
+                    <button type="submit" class="px-3 py-1.5 bg-emerald-500 text-white rounded hover:bg-emerald-600">إضافة للمخزون</button>
                 </div>
             </form>
         </div>
@@ -269,22 +265,22 @@
     <!-- Record Sales Modal -->
     <div id="salesModal" class="modal fixed inset-0 z-50 items-center justify-center">
         <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-md">
-            <div class="p-6 border-b flex justify-between items-center bg-red-50 rounded-t-xl">
-                <h2 class="text-xl font-bold text-red-800"><i class="fas fa-cash-register ml-2"></i>تسجيل مبيعات (خصم من المخزون)</h2>
+            <div class="p-5 border-b flex justify-between items-center bg-red-50 rounded-t-xl">
+                <h2 class="text-lg font-bold text-red-800"><i class="fas fa-cash-register ml-2"></i>تسجيل مبيعات (خصم من المخزون)</h2>
                 <button onclick="closeModal('salesModal')" class="text-gray-500 hover:text-red-500"><i class="fas fa-times fa-lg"></i></button>
             </div>
-            <form id="salesForm" class="p-6 space-y-4">
+            <form id="salesForm" class="p-5 space-y-3 text-xs">
                 <div>
-                    <label class="block text-sm font-semibold mb-1">اختر المنتج المباع</label>
-                    <select id="salesProductSelect" required class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-red-500 bg-white"></select>
+                    <label class="block font-semibold mb-1">اختر المنتج المباع</label>
+                    <select id="salesProductSelect" required class="w-full border rounded p-1.5 outline-none focus:ring-2 focus:ring-red-500 bg-white text-xs"></select>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1">الكمية المباعة</label>
-                    <input type="number" id="salesQty" required min="1" class="w-full border rounded p-2 outline-none focus:ring-2 focus:ring-red-500">
+                    <label class="block font-semibold mb-1">الكمية المباعة</label>
+                    <input type="number" id="salesQty" required min="1" class="w-full border rounded p-1.5 outline-none focus:ring-2 focus:ring-red-500">
                 </div>
-                <div class="flex justify-end gap-3 mt-4">
-                    <button type="button" onclick="closeModal('salesModal')" class="px-4 py-2 bg-gray-200 rounded">إلغاء</button>
-                    <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">خصم من المخزون</button>
+                <div class="flex justify-end gap-2 mt-3">
+                    <button type="button" onclick="closeModal('salesModal')" class="px-3 py-1.5 bg-gray-200 rounded">إلغاء</button>
+                    <button type="submit" class="px-3 py-1.5 bg-red-500 text-white rounded hover:bg-red-600">خصم من المخزون</button>
                 </div>
             </form>
         </div>
@@ -293,42 +289,41 @@
     <!-- Shortages Modal -->
     <div id="shortagesModal" class="modal fixed inset-0 z-50 items-center justify-center">
         <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-3xl max-h-[90vh] flex flex-col">
-            <div class="p-6 border-b flex justify-between items-center bg-amber-50 rounded-t-xl">
+            <div class="p-5 border-b flex justify-between items-center bg-amber-50 rounded-t-xl">
                 <div>
-                    <h2 class="text-xl font-bold text-amber-800"><i class="fas fa-clipboard-list ml-2"></i>قائمة النواقص وإعادة الطلب</h2>
-                    <p class="text-xs text-amber-600 mt-1">المنتجات التي نفذت أو وصل رصيدها للحد الأدنى</p>
+                    <h2 class="text-lg font-bold text-amber-800"><i class="fas fa-clipboard-list ml-2"></i>قائمة النواقص وإعادة الطلب</h2>
+                    <p class="text-[11px] text-amber-600 mt-0.5">المنتجات التي نفذت أو وصل رصيدها للحد الأدنى</p>
                 </div>
                 <button onclick="closeModal('shortagesModal')" class="text-gray-500 hover:text-red-500"><i class="fas fa-times fa-lg"></i></button>
             </div>
-            <div class="p-6 overflow-y-auto flex-grow" id="shortagesPrintArea">
-                <div class="mb-4 hidden print:block text-center">
-                    <h1 class="text-2xl font-bold">قائمة مشتريات ونواقص محل المكملات الغذائية</h1>
-                    <p class="text-sm text-gray-500" id="printDate"></p>
+            <div class="p-5 overflow-y-auto flex-grow" id="shortagesPrintArea">
+                <div class="mb-3 hidden print:block text-center">
+                    <h1 class="text-xl font-bold">قائمة مشتريات ونواقص محل المكملات الغذائية</h1>
+                    <p class="text-xs text-gray-500" id="printDate"></p>
                 </div>
                 <table class="w-full text-right border-collapse">
                     <thead>
-                        <tr class="bg-gray-100 border-b text-sm text-gray-700">
-                            <th class="p-3">اسم المنتج</th>
-                            <th class="p-3">الشركة المصنعة</th>
-                            <th class="p-3">التصنيف</th>
-                            <th class="p-3">النكهة / الحجم</th>
-                            <th class="p-3 text-center">الرصيد الحالي</th>
-                            <th class="p-3 text-center">الحد الأدنى</th>
-                            <th class="p-3 text-center">الحالة</th>
+                        <tr class="bg-gray-100 border-b text-xs text-gray-700">
+                            <th class="p-2.5">اسم المنتج</th>
+                            <th class="p-2.5">التصنيف</th>
+                            <th class="p-2.5">النكهة / الحجم</th>
+                            <th class="p-2.5 text-center">الرصيد الحالي</th>
+                            <th class="p-2.5 text-center">الحد الأدنى</th>
+                            <th class="p-2.5 text-center">الحالة</th>
                         </tr>
                     </thead>
-                    <tbody id="shortagesTableBody" class="divide-y text-sm"></tbody>
+                    <tbody id="shortagesTableBody" class="divide-y text-xs"></tbody>
                 </table>
                 <div id="noShortagesMsg" class="hidden text-center py-8 text-gray-500">
-                    <i class="fas fa-check-circle text-4xl text-emerald-500 mb-2"></i>
+                    <i class="fas fa-check-circle text-3xl text-emerald-500 mb-2"></i>
                     <p class="font-bold text-gray-700">ممتاز! لا توجد أي نواقص أو منتجات منخفضة المخزون حالياً.</p>
                 </div>
             </div>
-            <div class="p-4 border-t bg-gray-50 flex justify-between items-center rounded-b-xl no-print">
-                <span class="text-xs text-gray-500" id="shortagesCountLabel">عدد الأصناف: 0</span>
+            <div class="p-3.5 border-t bg-gray-50 flex justify-between items-center rounded-b-xl no-print text-xs">
+                <span class="text-gray-500" id="shortagesCountLabel">عدد الأصناف: 0</span>
                 <div class="flex gap-2">
-                    <button onclick="closeModal('shortagesModal')" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">إغلاق</button>
-                    <button onclick="printShortages()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold shadow-sm">
+                    <button onclick="closeModal('shortagesModal')" class="px-3 py-1.5 bg-gray-200 rounded hover:bg-gray-300">إغلاق</button>
+                    <button onclick="printShortages()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold shadow-sm">
                         <i class="fas fa-print ml-1"></i> طباعة القائمة
                     </button>
                 </div>
@@ -337,15 +332,15 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded shadow-lg transform transition-transform duration-300 translate-y-20 opacity-0 z-50">
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white px-5 py-2.5 rounded shadow-lg transform transition-transform duration-300 translate-y-20 opacity-0 z-50 text-xs font-semibold">
         <span id="toastMsg">رسالة</span>
     </div>
 
     <script>
         let products = JSON.parse(localStorage.getItem('nutrition_store_products')) || [
-            { id: '1', name: 'Gold Standard Whey', brand: 'Optimum Nutrition', category: 'بروتين', flavor: 'شوكولاتة - 5lbs', expiry: '2026-12-31', stock: 12, reorder: 5 },
-            { id: '2', name: 'Creatine Monohydrate', brand: 'Applied Nutrition', category: 'كرياتين', flavor: 'بدون نكهة - 300g', expiry: '2027-06-15', stock: 3, reorder: 5 },
-            { id: '3', name: 'Multi Vitamin Pack', brand: 'Universal', category: 'فيتامينات', flavor: 'حبوب - 44 كيس', expiry: '2026-04-10', stock: 0, reorder: 4 }
+            { id: '1', name: 'Gold Standard Whey', category: 'بروتين', flavor: 'شوكولاتة - 5lbs', expiry: '2026-12-31', stock: 12, reorder: 5 },
+            { id: '2', name: 'Creatine Monohydrate', category: 'كرياتين', flavor: 'بدون نكهة - 300g', expiry: '2027-06-15', stock: 3, reorder: 5 },
+            { id: '3', name: 'Multi Vitamin Pack', category: 'فيتامينات', flavor: 'حبوب - 44 كيس', expiry: '2026-04-10', stock: 0, reorder: 4 }
         ];
 
         let categories = JSON.parse(localStorage.getItem('nutrition_store_categories')) || ['بروتين', 'كرياتين', 'فيتامينات', 'حوارق دهون', 'أحماض أمينية', 'طاقة', 'سناك صحي'];
@@ -439,7 +434,6 @@
             products.forEach(p => {
                 const status = getProductStatus(p.stock, p.expiry, p.reorder);
                 const matchSearch = p.name.toLowerCase().includes(searchTerm) || 
-                                    (p.brand && p.brand.toLowerCase().includes(searchTerm)) || 
                                     (p.flavor && p.flavor.toLowerCase().includes(searchTerm));
                 const matchFilter = filterVal === 'all' || status.code === filterVal;
 
@@ -449,25 +443,24 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50 transition";
                 tr.innerHTML = `
-                    <td class="px-4 py-4 text-center">
-                        <input type="checkbox" value="${p.id}" onchange="handleRowSelection()" class="row-checkbox rounded border-gray-300 text-primary focus:ring-primary w-4 h-4 cursor-pointer">
+                    <td class="px-2.5 py-3 text-center">
+                        <input type="checkbox" value="${p.id}" onchange="handleRowSelection()" class="row-checkbox rounded border-gray-300 text-primary focus:ring-primary w-3.5 h-3.5 cursor-pointer">
                     </td>
-                    <td class="px-6 py-4 font-semibold text-gray-800">${p.name}</td>
-                    <td class="px-6 py-4 text-sm text-gray-600">${p.brand || '-'}</td>
-                    <td class="px-6 py-4"><span class="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600">${p.category}</span></td>
-                    <td class="px-6 py-4 text-sm">${p.flavor || '-'}</td>
-                    <td class="px-6 py-4 text-sm" dir="ltr">${p.expiry}</td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center justify-center gap-2">
-                            <button onclick="quickUpdateStock('${p.id}', -1)" class="w-7 h-7 rounded-full bg-red-100 text-red-600 hover:bg-red-200"><i class="fas fa-minus text-xs"></i></button>
-                            <span class="font-bold w-8 text-center text-lg ${p.stock == 0 ? 'text-red-500' : ''}">${p.stock}</span>
-                            <button onclick="quickUpdateStock('${p.id}', 1)" class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200"><i class="fas fa-plus text-xs"></i></button>
+                    <td class="px-3 py-3 font-bold text-gray-800">${p.name}</td>
+                    <td class="px-3 py-3"><span class="bg-gray-100 px-2 py-0.5 rounded text-[11px] text-gray-600">${p.category}</span></td>
+                    <td class="px-3 py-3 text-gray-600">${p.flavor || '-'}</td>
+                    <td class="px-3 py-3 text-gray-600" dir="ltr">${p.expiry}</td>
+                    <td class="px-3 py-3">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="quickUpdateStock('${p.id}', -1)" class="w-6 h-6 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center"><i class="fas fa-minus text-[10px]"></i></button>
+                            <span class="font-bold w-6 text-center text-sm ${p.stock == 0 ? 'text-red-500' : ''}">${p.stock}</span>
+                            <button onclick="quickUpdateStock('${p.id}', 1)" class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200 flex items-center justify-center"><i class="fas fa-plus text-[10px]"></i></button>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="px-3 py-1 rounded-full text-xs border ${status.class}">${status.label}</span>
+                    <td class="px-3 py-3 text-center">
+                        <span class="px-2 py-0.5 rounded-full text-[11px] border ${status.class}">${status.label}</span>
                     </td>
-                    <td class="px-6 py-4 text-center">
+                    <td class="px-3 py-3 text-center">
                         <button onclick="editProduct('${p.id}')" class="text-blue-500 hover:text-blue-700 mx-1" title="تعديل"><i class="fas fa-edit"></i></button>
                         <button onclick="deleteProduct('${p.id}')" class="text-red-500 hover:text-red-700 mx-1" title="حذف"><i class="fas fa-trash-alt"></i></button>
                     </td>
@@ -505,13 +498,13 @@
             const customConfirm = document.createElement('div');
             customConfirm.className = 'fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center';
             customConfirm.innerHTML = `
-                <div class="bg-white p-6 rounded-xl shadow-xl max-w-sm text-center">
-                    <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
-                    <h3 class="text-lg font-bold mb-2">تأكيد الحذف الجماعي</h3>
-                    <p class="text-gray-600 mb-6">هل أنت متأكد من حذف (${idsToDelete.length}) منتجاً نهائياً؟</p>
-                    <div class="flex justify-center gap-3">
-                        <button id="cancelBulk" class="px-4 py-2 bg-gray-200 rounded">إلغاء</button>
-                        <button id="confirmBulk" class="px-4 py-2 bg-red-600 text-white font-bold rounded">حذف الكل</button>
+                <div class="bg-white p-5 rounded-xl shadow-xl max-w-sm text-center text-xs">
+                    <i class="fas fa-exclamation-triangle text-3xl text-red-500 mb-3"></i>
+                    <h3 class="text-sm font-bold mb-2">تأكيد الحذف الجماعي</h3>
+                    <p class="text-gray-600 mb-5">هل أنت متأكد من حذف (${idsToDelete.length}) منتجاً نهائياً؟</p>
+                    <div class="flex justify-center gap-2">
+                        <button id="cancelBulk" class="px-3 py-1.5 bg-gray-200 rounded">إلغاء</button>
+                        <button id="confirmBulk" class="px-3 py-1.5 bg-red-600 text-white font-bold rounded">حذف الكل</button>
                     </div>
                 </div>
             `;
@@ -539,7 +532,6 @@
             const product = {
                 id: id || Date.now().toString(),
                 name: document.getElementById('prodName').value,
-                brand: document.getElementById('prodBrand').value,
                 category: document.getElementById('prodCategory').value,
                 flavor: document.getElementById('prodFlavor').value,
                 expiry: document.getElementById('prodExpiry').value,
@@ -563,7 +555,6 @@
             if (!product) return;
             document.getElementById('prodId').value = product.id;
             document.getElementById('prodName').value = product.name;
-            document.getElementById('prodBrand').value = product.brand || '';
             document.getElementById('prodCategory').value = product.category;
             document.getElementById('prodFlavor').value = product.flavor || '';
             document.getElementById('prodExpiry').value = product.expiry;
@@ -577,13 +568,13 @@
             const customConfirm = document.createElement('div');
             customConfirm.className = 'fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center';
             customConfirm.innerHTML = `
-                <div class="bg-white p-6 rounded-xl shadow-xl max-w-sm text-center">
-                    <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-4"></i>
-                    <h3 class="text-lg font-bold mb-2">تأكيد الحذف</h3>
-                    <p class="text-gray-600 mb-6">هل أنت متأكد من رغبتك في حذف هذا المنتج نهائياً؟</p>
-                    <div class="flex justify-center gap-3">
-                        <button id="cancelDel" class="px-4 py-2 bg-gray-200 rounded">إلغاء</button>
-                        <button id="confirmDel" class="px-4 py-2 bg-red-500 text-white rounded">حذف</button>
+                <div class="bg-white p-5 rounded-xl shadow-xl max-w-sm text-center text-xs">
+                    <i class="fas fa-exclamation-circle text-3xl text-red-500 mb-3"></i>
+                    <h3 class="text-sm font-bold mb-2">تأكيد الحذف</h3>
+                    <p class="text-gray-600 mb-5">هل أنت متأكد من رغبتك في حذف هذا المنتج نهائياً؟</p>
+                    <div class="flex justify-center gap-2">
+                        <button id="cancelDel" class="px-3 py-1.5 bg-gray-200 rounded">إلغاء</button>
+                        <button id="confirmDel" class="px-3 py-1.5 bg-red-500 text-white rounded">حذف</button>
                     </div>
                 </div>
             `;
@@ -612,7 +603,7 @@
             const salesSelect = document.getElementById('salesProductSelect');
             let options = '<option value="">-- اختر المنتج --</option>';
             [...products].sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
-                options += `<option value="${p.id}">${p.name} ${p.brand ? ' - ' + p.brand : ''} - ${p.flavor||'بدون نكهة'} (متاح: ${p.stock})</option>`;
+                options += `<option value="${p.id}">${p.name} - ${p.flavor||'بدون نكهة'} (متاح: ${p.stock})</option>`;
             });
             orderSelect.innerHTML = options;
             salesSelect.innerHTML = options;
@@ -688,9 +679,9 @@
 
         window.exportToCSV = function() {
             if(products.length === 0) { showToast('لا توجد بيانات لتصديرها','warning'); return; }
-            let csvContent = "\uFEFFاسم المنتج,الشركة المصنعة,التصنيف,النكهة/الحجم,الصلاحية,المخزون,حد الطلب\n";
+            let csvContent = "\uFEFFاسم المنتج,التصنيف,النكهة/الحجم,الصلاحية,المخزون,حد الطلب\n";
             products.forEach(p => {
-                csvContent += `"${p.name}","${p.brand||''}","${p.category}","${p.flavor||''}","${p.expiry}",${p.stock},${p.reorder}\n`;
+                csvContent += `"${p.name}","${p.category}","${p.flavor||''}","${p.expiry}",${p.stock},${p.reorder}\n`;
             });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
@@ -711,18 +702,17 @@
                 
                 for(let line of lines) {
                     const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(col => col.replace(/(^"|"$)/g, '').trim());
-                    if (cols.length >= 7) {
+                    if (cols.length >= 6) {
                         const newProduct = {
                             id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
                             name: cols[0],
-                            brand: cols[1],
-                            category: cols[2],
-                            flavor: cols[3],
-                            expiry: cols[4],
-                            stock: parseInt(cols[5]) || 0,
-                            reorder: parseInt(cols[6]) || 5
+                            category: cols[1],
+                            flavor: cols[2],
+                            expiry: cols[3],
+                            stock: parseInt(cols[4]) || 0,
+                            reorder: parseInt(cols[5]) || 5
                         };
-                        const isDuplicate = products.some(p => p.name === newProduct.name && p.brand === newProduct.brand && p.flavor === newProduct.flavor && p.expiry === newProduct.expiry);
+                        const isDuplicate = products.some(p => p.name === newProduct.name && p.flavor === newProduct.flavor && p.expiry === newProduct.expiry);
                         if (!isDuplicate) {
                             if(!categories.includes(newProduct.category)) categories.push(newProduct.category);
                             products.push(newProduct);
@@ -762,16 +752,15 @@
                 const stock = parseInt(p.stock) || 0;
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50 border-b";
-                let badge = stock === 0 ? `<span class="px-2 py-1 bg-gray-200 text-gray-800 rounded-full text-xs font-bold">نفذ تماماً (0)</span>` : `<span class="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">مخزون منخفض</span>`;
+                let badge = stock === 0 ? `<span class="px-2 py-0.5 bg-gray-200 text-gray-800 rounded-full text-[11px] font-bold">نفذ تماماً (0)</span>` : `<span class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-[11px] font-semibold">مخزون منخفض</span>`;
 
                 tr.innerHTML = `
-                    <td class="p-3 font-semibold text-gray-800">${p.name}</td>
-                    <td class="p-3 text-sm text-gray-600">${p.brand || '-'}</td>
-                    <td class="p-3"><span class="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600">${p.category}</span></td>
-                    <td class="p-3 text-sm">${p.flavor || '-'}</td>
-                    <td class="p-3 text-center font-bold text-lg ${stock === 0 ? 'text-red-600' : 'text-orange-600'}">${stock}</td>
-                    <td class="p-3 text-center text-sm text-gray-600">${p.reorder || 5}</td>
-                    <td class="p-3 text-center">${badge}</td>
+                    <td class="p-2.5 font-bold text-gray-800">${p.name}</td>
+                    <td class="p-2.5"><span class="bg-gray-100 px-2 py-0.5 rounded text-[11px] text-gray-600">${p.category}</span></td>
+                    <td class="p-2.5 text-gray-600">${p.flavor || '-'}</td>
+                    <td class="p-2.5 text-center font-bold text-sm ${stock === 0 ? 'text-red-600' : 'text-orange-600'}">${stock}</td>
+                    <td class="p-2.5 text-center text-gray-600">${p.reorder || 5}</td>
+                    <td class="p-2.5 text-center">${badge}</td>
                 `;
                 tbody.appendChild(tr);
             });
